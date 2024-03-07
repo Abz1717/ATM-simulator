@@ -6,59 +6,89 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ATM_simulator
 {
-    enum ATMState
-    {
-        LoggedIn,
-        LoggedOut,
-        DisplayingBalance,
-        WithdrawingMoney
 
-    }
+    
 
+
+    /**
+     * Main ATM class which is a form
+     */
     public partial class ATMForm : Form
     {
-        Account activeAccount;
-        Account amount;
-        private Button btnWithdraw;
-        private Button btnCheckBalance;
-        private Button btnLogout;
-        private Button btnNewAtm;
+        private System.Windows.Forms.Button btnWithdraw;
+        private System.Windows.Forms.Button btnCheckBalance;
+        private System.Windows.Forms.Button btnLogout;
         private Label lblBalance;
-        private Button btnReturntoMenu;
+        private System.Windows.Forms.Button btnReturntoMenu;
         private Label lblWithdrawInstructions;
         private ATMState currentState = ATMState.LoggedOut;
-        private Button btnWithdraw10;
-        private Button btnWithdraw50;
-        private Button btnWithdraw500;
-        private Button btnWithdrawCustom;
+        private System.Windows.Forms.Button btnWithdraw10;
+        private System.Windows.Forms.Button btnWithdraw50;
+        private System.Windows.Forms.Button btnWithdraw500;
+        private System.Windows.Forms.Button btnWithdrawCustom; // set up variables
+   
 
+        // local reference to array of accounts
+        private Account[] ac;
 
+        //this is a referance to the account that is being used
+        private Account activeAccount = null;
 
-        private void Initializing()
+        // the atm constructor takes an array of account objects as a reference
+        public ATMForm(Account[] ac)
         {
-            btnWithdraw = new Button { Text = "Withdraw", Visible = false, Location = new Point(217, 110), Size = new Size(200, 30) };
-            btnCheckBalance = new Button { Text = "Check Balance", Visible = false, Location = new Point(217, 150), Size = new Size(200, 30) };
-            btnLogout = new Button { Text = "Logout", Visible = false, Location = new Point(217, 190), Size = new Size(200, 30) };
-            btnNewAtm = new Button { Text = "New ATM", Visible = false, Location = new Point(217, 270), Size = new Size(200, 30) };
+            InitializeComponent();
+            InitializeWithdrawal();
+            this.ac = ac;
+        }
+
+        public Account findAccount(int accountNumber)
+        {
+            foreach (Account acc in ac)
+            {
+                if (acc.GetAccountNum() == accountNumber)
+                {
+                    return acc;
+                }
+            }
+            return null;
+        }
+
+        enum ATMState
+        {
+            LoggedIn,
+            LoggedOut,
+            DisplayingBalance,
+            WithdrawingMoney
+
+        }
+
+        private void InitializeWithdrawal()
+        {
+            btnWithdraw = new System.Windows.Forms.Button { Text = "Withdraw", Visible = false, Location = new Point(217, 110), Size = new Size(200, 30) };
+            btnCheckBalance = new System.Windows.Forms.Button { Text = "Check Balance", Visible = false, Location = new Point(217, 150), Size = new Size(200, 30) };
+            btnLogout = new System.Windows.Forms.Button { Text = "Logout", Visible = false, Location = new Point(217, 190), Size = new Size(200, 30) };
             lblBalance = new Label { Location = new Point(217, 230), Size = new Size(217, 30), Visible = false };
-            btnReturntoMenu = new Button { Text = "Return to Account Menu", Size = new Size(150, 30), Location = new Point(10, 280), Visible = false };
+            btnReturntoMenu = new System.Windows.Forms.Button { Text = "Return to Account Menu", Size = new Size(150, 30), Location = new Point(10, 280), Visible = false };
             lblWithdrawInstructions = new Label { Text = "Choose your withdrawal amount below: ", Location = new Point(217, 100), Size = new Size(200, 30), Visible = false };
 
-            btnWithdraw10 = new Button { Text = "£10", Location = new Point(267, 150), Size = new Size(100, 50), Visible = false };
-            btnWithdraw50 = new Button { Text = "£50", Location = new Point(267, 200), Size = new Size(100, 50), Visible = false };
-            btnWithdraw500 = new Button { Text = "£500", Location = new Point(267, 250), Size = new Size(100, 50), Visible = false };
-            btnWithdrawCustom = new Button { Text = "Custom Amount", Location = new Point(217, 300), Size = new Size(200, 60), Visible = false };
+            btnWithdraw10 = new System.Windows.Forms.Button { Text = "£10", Location = new Point(267, 150), Size = new Size(100, 50), Visible = false };
+            btnWithdraw50 = new System.Windows.Forms.Button { Text = "£50", Location = new Point(267, 200), Size = new Size(100, 50), Visible = false };
+            btnWithdraw500 = new System.Windows.Forms.Button { Text = "£500", Location = new Point(267, 250), Size = new Size(100, 50), Visible = false };
+            btnWithdrawCustom = new System.Windows.Forms.Button { Text = "Custom Amount", Location = new Point(217, 300), Size = new Size(200, 60), Visible = false };
 
             btnWithdraw.Click += new EventHandler(this.btnWithdraw_Click);
             btnCheckBalance.Click += new EventHandler(this.btnCheckBalance_Click);
             btnLogout.Click += new EventHandler(this.btnLogout_Click);
-            btnNewAtm.Click += new EventHandler(this.btnNewAtm_Click);
             btnReturntoMenu.Click += new EventHandler(this.btnReturntoMenu_Click);
             btnWithdraw10.Click += new EventHandler(this.btnWithdraw10_Click);
             btnWithdraw50.Click += new EventHandler(this.btnWithdraw50_Click);
@@ -71,7 +101,6 @@ namespace ATM_simulator
             Controls.Add(btnWithdraw);
             Controls.Add(btnCheckBalance);
             Controls.Add(btnLogout);
-            Controls.Add(btnNewAtm);
             Controls.Add(btnReturntoMenu);
             Controls.Add(lblWithdrawInstructions);
             Controls.Add(btnWithdraw10);
@@ -122,7 +151,6 @@ namespace ATM_simulator
             btnCheckBalance.Visible = false;
             btnWithdraw.Visible = false;
             btnLogout.Visible = false;
-            btnNewAtm.Visible = false;
             lblBalance.Visible = false;
             btnReturntoMenu.Visible = false;
             lblWithdrawInstructions.Visible = false;
@@ -137,12 +165,8 @@ namespace ATM_simulator
             txtPin.Visible = false;
             btnConfirm.Visible = false;
         }
-        private void btnNewAtm_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("New ATM clicked - still to be implemented.");
 
-        }
-
+    
 
         // im not sure what he meant about
         // "change the operation so that rather than exiting when a person takes
@@ -156,8 +180,6 @@ namespace ATM_simulator
 
         private void btnCheckBalance_Click(object sender, EventArgs e)
         {
-
-
             currentState = ATMState.DisplayingBalance;
             updateUI(currentState);
 
@@ -186,20 +208,13 @@ namespace ATM_simulator
             }
         }
 
-        public ATMForm()
-        {
-            InitializeComponent();
-            Initializing();
-
-        }
-
         private void btnConfirm_Click(object sender, EventArgs e)
         {
 
             if (string.IsNullOrWhiteSpace(txtAccNum.Text) || string.IsNullOrWhiteSpace(txtPin.Text))
             {
                 MessageBox.Show("Enter your account number and PIN before pressing confirm");
-                return; 
+                return;
             }
 
             if (!int.TryParse(txtAccNum.Text, out int accountNumber) || accountNumber <= 0)
@@ -211,20 +226,17 @@ namespace ATM_simulator
             if (!int.TryParse(txtPin.Text, out int pin) || pin <= 0)
             {
                 MessageBox.Show("Please enter a valid PIN.");
-                return; 
+                return;
             }
 
-
-            ATM atm = new ATM();
-            activeAccount = atm.findAccount(int.Parse(txtAccNum.Text));
+            //ATM atm = new ATM();
+            activeAccount = findAccount(int.Parse(txtAccNum.Text));
             if (activeAccount != null)
             {
                 if (activeAccount.checkPin(int.Parse(txtPin.Text)))
                 {
                     currentState = ATMState.LoggedIn;
                     updateUI(currentState);
-
-
                 }
                 else
                 {
@@ -250,7 +262,6 @@ namespace ATM_simulator
                     btnCheckBalance.Visible = true;
                     btnWithdraw.Visible = true;
                     btnLogout.Visible = true;
-                    btnNewAtm.Visible = true;
                     break;
                 case ATMState.DisplayingBalance:
 
@@ -260,10 +271,10 @@ namespace ATM_simulator
                 case ATMState.WithdrawingMoney:
                     lblWithdrawInstructions.Visible = true;
                     btnWithdraw10.Visible = true;
-                    btnWithdraw50.Visible = true;   
+                    btnWithdraw50.Visible = true;
                     btnWithdraw500.Visible = true;
                     btnWithdrawCustom.Visible = true;
-                    btnReturntoMenu.Visible=true;
+                    btnReturntoMenu.Visible = true;
                     break;
                 case ATMState.LoggedOut:
 
@@ -272,42 +283,58 @@ namespace ATM_simulator
                     btnConfirm.Visible = true;
                     activeAccount = null;
                     txtAccNum.Text = "";
-                    txtPin.Text="";
+                    txtPin.Text = "";
                     break;
 
             }
         }
-        
-        class ATM
+    }
+
+    public class BankComputer
+    {
+        private Account[] ac = new Account[3]; // create array of accounts
+        // create atm objects
+        private ATMForm atm1, atm2; 
+        private Thread ATM1_t, ATM2_t; // create threads
+
+        /*
+         * This fucntions initilises the 3 accounts 
+         * and instanciates the ATM class passing a referance to the account information
+         * 
+         */
+        public BankComputer()
         {
-            private Account[] ac = new Account[3];
+            // set up accounts
+            ac[0] = new Account(300, 1111, 111111);
+            ac[1] = new Account(750, 2222, 222222);
+            ac[2] = new Account(3000, 3333, 333333);
 
-            public ATM()
-            {
-                ac[0] = new Account(300, 1111, 111111);
-                ac[1] = new Account(750, 2222, 222222);
-                ac[2] = new Account(3000, 3333, 333333);
+            // this runs one ATM - need to run a second one
+            //Application.Run(new ATMForm(ac));
 
-            }
+            // run two different ATM Windows
+            ATM1_t = new Thread(new ThreadStart(ThreadProc));
+            ATM1_t.Start();
+            ATM2_t = new Thread(new ThreadStart(ThreadProc));
+            ATM2_t.Start();
+    
+        }
 
-            public Account findAccount(int accountNumber)
-            {
-                foreach (Account acc in ac)
-                {
-                    if (acc.GetAccountNum() == accountNumber)
-                    {
-                        return acc;
-                    }
-                }
-                return null;
-            }
+        // got this method from this webiste - https://stackoverflow.com/questions/9856596/multiple-forms-in-separate-threads
+        private void ThreadProc()
+        {
+            var frm = new ATMForm(ac);
+            frm.ShowDialog();
+        }
+
+
+        static void Main(string[] args)
+        {
+            new BankComputer();
         }
     }
 
-
-
-
-    class Account
+    public class Account
     {
         //the attributes for the account
         private int balance;
@@ -332,6 +359,11 @@ namespace ATM_simulator
             this.balance = newBalance;
         }
 
+        /**
+         * Decrement the balance of the account, first checking if there are sufficient funds to do so
+         * amount - the amount to decrement the balance by
+         * return true if transaction was successful, false if there were unsufficient funds
+         */
         public Boolean decrementBalance(int amount)
         {
             if (this.balance > amount)
@@ -345,6 +377,9 @@ namespace ATM_simulator
             }
         }
 
+        /**
+         * Check the entered pin against the pin stored in the account
+         */
         public Boolean checkPin(int pinEntered)
         {
             if (pinEntered == pin)
@@ -356,6 +391,8 @@ namespace ATM_simulator
                 return false;
             }
         }
+
+        // get the account number
         public int GetAccountNum()
         {
             return accountNum;

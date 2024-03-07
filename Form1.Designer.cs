@@ -37,23 +37,27 @@ namespace ATM_simulator
             // 
             // txtAccNum
             // 
-            this.txtAccNum.Location = new System.Drawing.Point(417, 175);
+            this.txtAccNum.Location = new System.Drawing.Point(313, 140);
+            this.txtAccNum.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.txtAccNum.Name = "txtAccNum";
-            this.txtAccNum.Size = new System.Drawing.Size(378, 31);
+            this.txtAccNum.Size = new System.Drawing.Size(284, 26);
             this.txtAccNum.TabIndex = 0;
+            //this.txtAccNum.TextChanged += new System.EventHandler(this.txtAccNum_TextChanged);
             // 
             // txtPin
             // 
-            this.txtPin.Location = new System.Drawing.Point(417, 258);
+            this.txtPin.Location = new System.Drawing.Point(313, 206);
+            this.txtPin.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.txtPin.Name = "txtPin";
-            this.txtPin.Size = new System.Drawing.Size(378, 31);
+            this.txtPin.Size = new System.Drawing.Size(284, 26);
             this.txtPin.TabIndex = 1;
             // 
             // btnConfirm
             // 
-            this.btnConfirm.Location = new System.Drawing.Point(417, 363);
+            this.btnConfirm.Location = new System.Drawing.Point(313, 290);
+            this.btnConfirm.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.btnConfirm.Name = "btnConfirm";
-            this.btnConfirm.Size = new System.Drawing.Size(377, 74);
+            this.btnConfirm.Size = new System.Drawing.Size(283, 59);
             this.btnConfirm.TabIndex = 2;
             this.btnConfirm.Text = "Confirm";
             this.btnConfirm.UseVisualStyleBackColor = true;
@@ -61,12 +65,13 @@ namespace ATM_simulator
             // 
             // ATMForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1186, 749);
+            this.ClientSize = new System.Drawing.Size(890, 599);
             this.Controls.Add(this.btnConfirm);
             this.Controls.Add(this.txtPin);
             this.Controls.Add(this.txtAccNum);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "ATMForm";
             this.Text = "ATM";
             this.Load += new System.EventHandler(this.Form1_Load);
