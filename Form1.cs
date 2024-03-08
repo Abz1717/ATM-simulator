@@ -290,12 +290,14 @@ namespace ATM_simulator
         }
     }
 
-    public class BankComputer
+
+    public partial class BankComputer : Form
     {
         private Account[] ac = new Account[3]; // create array of accounts
         // create atm objects
         private ATMForm atm1, atm2; 
         private Thread ATM1_t, ATM2_t; // create threads
+        private System.Windows.Forms.Button btnLaunchATM;
 
         /*
          * This fucntions initilises the 3 accounts 
@@ -304,34 +306,82 @@ namespace ATM_simulator
          */
         public BankComputer()
         {
-            // set up accounts
-            ac[0] = new Account(300, 1111, 111111);
-            ac[1] = new Account(750, 2222, 222222);
-            ac[2] = new Account(3000, 3333, 333333);
+
+            InitializeComponent();
+            InitializeAccounts();
+
 
             // this runs one ATM - need to run a second one
             //Application.Run(new ATMForm(ac));
 
+            /*
             // run two different ATM Windows
             ATM1_t = new Thread(new ThreadStart(ThreadProc));
             ATM1_t.Start();
             ATM2_t = new Thread(new ThreadStart(ThreadProc));
             ATM2_t.Start();
-    
+            */
+
         }
 
+       private void InitializeComponent()
+        {
+            this.btnLaunchATM = new System.Windows.Forms.Button();
+
+
+            this.btnLaunchATM = new System.Windows.Forms.Button { Text = "Launch ATM", Location = new Point(10, 10), Size = new Size(100, 30), TabIndex = 0, UseVisualStyleBackColor = true };
+            this.btnLaunchATM.Click += new EventHandler(this.BtnLaunchATM_Click);
+            Controls.Add(this.btnLaunchATM);
+
+        }
+
+        private void BtnLaunchATM_Click(object sender, EventArgs e)
+        {
+            Thread atmThread = new Thread(new ThreadStart(this.RunATM));
+          //  atmThread.IsBackground = true; if we want the thread all threads to close after main thread closure.
+            atmThread.Start();
+        }
+
+        private void RunATM()
+        {
+            ATMForm atmForm = new ATMForm(ac);
+            Application.Run(atmForm);
+        }
+        private void InitializeAccounts()
+        {
+            // set up accounts
+            ac[0] = new Account(300, 1111, 111111);
+            ac[1] = new Account(750, 2222, 222222);
+            ac[2] = new Account(3000, 3333, 333333);
+        }
+
+
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new BankComputer());
+        }
+
+
+
         // got this method from this webiste - https://stackoverflow.com/questions/9856596/multiple-forms-in-separate-threads
+        /*
         private void ThreadProc()
         {
             var frm = new ATMForm(ac);
             frm.ShowDialog();
         }
 
+        */
 
+        /*
         static void Main(string[] args)
         {
             new BankComputer();
         }
+        */
     }
 
     public class Account
