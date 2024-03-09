@@ -230,6 +230,7 @@ namespace ATM_simulator
             updateUI(currentState);
         }
 
+
         private void resetUI()
         {
             //Code generated objects 
