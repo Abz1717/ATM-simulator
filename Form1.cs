@@ -40,7 +40,7 @@ namespace ATM_simulator
         private System.Windows.Forms.TextBox txtPin;
         private Label accPinSymbol;
         private Label accNumSymbol;
-
+        private System.Windows.Forms.Button btnRaceConditionCheck;
 
 
         // local reference to array of accounts
@@ -105,14 +105,19 @@ namespace ATM_simulator
             btnWithdraw500 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 12, FontStyle.Regular), Text = "£500", Location = new Point(267, 250), Size = new Size(100, 50), Visible = false };
             btnWithdrawCustom = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 12, FontStyle.Regular), Text = "Custom Amount", Location = new Point(217, 300), Size = new Size(200, 60), Visible = false };
 
+            btnRaceConditionCheck = new System.Windows.Forms.Button { Text = "Test Race Condition", Visible = false, Location = new Point(10, 230), Size = new Size(150, 30), Font = new Font(Font, FontStyle.Italic) };
+
             btnWithdraw.Click += new EventHandler(this.btnWithdraw_Click);
             btnCheckBalance.Click += new EventHandler(this.btnCheckBalance_Click);
             btnLogout.Click += new EventHandler(this.btnLogout_Click);
+           
             btnReturntoMenu.Click += new EventHandler(this.btnReturntoMenu_Click);
             btnWithdraw10.Click += new EventHandler(this.btnWithdraw10_Click);
             btnWithdraw50.Click += new EventHandler(this.btnWithdraw50_Click);
             btnWithdraw500.Click += new EventHandler(this.btnWithdraw500_Click);
             btnWithdrawCustom.Click += new EventHandler(this.btnWithdrawCustom_Click);
+
+            btnRaceConditionCheck.Click += new EventHandler(this.btnRaceConditionCheck_Click);
 
 
 
@@ -126,7 +131,13 @@ namespace ATM_simulator
             Controls.Add(btnWithdraw50);
             Controls.Add(btnWithdraw500);
             Controls.Add(btnWithdrawCustom);
+            Controls.Add(btnRaceConditionCheck);
 
+        }
+
+        private void btnRaceConditionCheck_Click(object sender, EventArgs e)
+        {
+            concurrentWithdrawals(100);
         }
 
         //this is the code that creates the buttons for the login screen
@@ -232,6 +243,7 @@ namespace ATM_simulator
             btnWithdraw50.Visible = false;
             btnWithdraw500.Visible = false;
             btnWithdrawCustom.Visible = false;
+            btnRaceConditionCheck.Visible = false; 
 
 
             //Design objects 
@@ -274,6 +286,24 @@ namespace ATM_simulator
             updateUI(currentState);
         }
 
+        private void concurrentWithdrawals(int withdrawalAmount)
+        {
+            // creating two threads and decremeting balance of the active account
+            var atm1Thread = new Thread(() => activeAccount?.decrementBalance(withdrawalAmount));
+            var atm2Thread = new Thread(() => activeAccount?.decrementBalance(withdrawalAmount));
+
+            atm1Thread.Start();
+            atm2Thread.Start();
+
+            atm1Thread.Join();
+            atm2Thread.Join();
+
+            // invoking method on UI thread using MethodInvoker https://stackoverflow.com/questions/36471563/c-sharp-this-invokemethodinvokerdelegate
+            this.Invoke((MethodInvoker)delegate
+            {
+                MessageBox.Show($"final balance after concurrent withdrawals: {activeAccount.getBalance()}");
+            });
+        }
 
         private void doWithdrawal(int amount)
         {
@@ -356,6 +386,7 @@ namespace ATM_simulator
                     btnWithdraw500.Visible = true;
                     btnWithdrawCustom.Visible = true;
                     btnReturntoMenu.Visible = true;
+                    btnRaceConditionCheck.Visible = true;
                     break;
                 case ATMState.LoggedOut:
 
@@ -388,6 +419,8 @@ namespace ATM_simulator
         private Thread ATM1_t, ATM2_t; // create threads
         private System.Windows.Forms.Button btnLaunchATM;
 
+
+
         /*
          * This fucntions initilises the 3 accounts 
          * and instanciates the ATM class passing a referance to the account information
@@ -395,10 +428,9 @@ namespace ATM_simulator
          */
         public BankComputer()
         {
-
             InitializeComponent();
-            InitializeAccounts();
 
+            InitializeAccounts();
 
             // this runs one ATM - need to run a second one
             //Application.Run(new ATMForm(ac));
@@ -415,6 +447,7 @@ namespace ATM_simulator
 
         //This is the code that creates the button for (launch ATM)
        private void InitializeComponent()
+
         {
             this.btnLaunchATM = new System.Windows.Forms.Button();
 
@@ -474,6 +507,8 @@ namespace ATM_simulator
             new BankComputer();
         }
         */
+
+
     }
 
     public class Account
@@ -510,6 +545,8 @@ namespace ATM_simulator
         {
             if (this.balance > amount)
             {
+               Thread.Sleep(2000); // artificial delay to increase chances of data race condition demonstration
+                                    // using thread.sleep blocks current thread for a specific time
                 balance -= amount;
                 return true;
             }
