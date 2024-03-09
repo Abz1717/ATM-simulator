@@ -87,7 +87,7 @@ namespace ATM_simulator
             btnWithdraw500 = new System.Windows.Forms.Button { Text = "£500", Location = new Point(267, 250), Size = new Size(100, 50), Visible = false };
             btnWithdrawCustom = new System.Windows.Forms.Button { Text = "Custom Amount", Location = new Point(217, 300), Size = new Size(200, 60), Visible = false };
 
-            btnRaceConditionCheck = new System.Windows.Forms.Button { Text = "Data Race Condition Check", Visible = false, Location = new Point(217, 340), Size = new Size(200, 30) };
+            btnRaceConditionCheck = new System.Windows.Forms.Button { Text = "Test Race Condition", Visible = false, Location = new Point(10, 230), Size = new Size(150, 30), Font = new Font(Font, FontStyle.Italic) };
 
             btnWithdraw.Click += new EventHandler(this.btnWithdraw_Click);
             btnCheckBalance.Click += new EventHandler(this.btnCheckBalance_Click);
@@ -170,6 +170,7 @@ namespace ATM_simulator
             btnWithdraw50.Visible = false;
             btnWithdraw500.Visible = false;
             btnWithdrawCustom.Visible = false;
+            btnRaceConditionCheck.Visible = false; 
 
 
             //Design objects 
@@ -292,8 +293,6 @@ namespace ATM_simulator
                     btnCheckBalance.Visible = true;
                     btnWithdraw.Visible = true;
                     btnLogout.Visible = true;
-                    btnRaceConditionCheck.Visible = true; 
-
                     break;
                 case ATMState.DisplayingBalance:
 
@@ -307,6 +306,7 @@ namespace ATM_simulator
                     btnWithdraw500.Visible = true;
                     btnWithdrawCustom.Visible = true;
                     btnReturntoMenu.Visible = true;
+                    btnRaceConditionCheck.Visible = true;
                     break;
                 case ATMState.LoggedOut:
 
