@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.Logging;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
@@ -24,6 +26,7 @@ namespace ATM_simulator
      */
     public partial class ATMForm : Form
     {
+        // set up GUI variables
         private System.Windows.Forms.Button btnWithdraw;
         private System.Windows.Forms.Button btnCheckBalance;
         private System.Windows.Forms.Button btnLogout;
@@ -34,22 +37,17 @@ namespace ATM_simulator
         private System.Windows.Forms.Button btnWithdraw10;
         private System.Windows.Forms.Button btnWithdraw50;
         private System.Windows.Forms.Button btnWithdraw500;
-        private System.Windows.Forms.Button btnWithdrawCustom; // set up variables
-        private System.Windows.Forms.Button btnConfirm;
-        private System.Windows.Forms.TextBox txtAccNum;
-        private System.Windows.Forms.TextBox txtPin;
-        private System.Windows.Forms.Label loginText;
-        private System.Windows.Forms.Label welcomeText;
-        private System.Windows.Forms.Label optionsText;
-        private System.Windows.Forms.Panel colorBlock;
-        private System.Windows.Forms.PictureBox logo;
-        private System.Windows.Forms.Panel diagonalStripePanel;
-        private Label accPinSymbol;
-        private Label accNumSymbol;
+        private System.Windows.Forms.Button btnWithdrawCustom;
+        private System.Windows.Forms.Button btnEnter, btnCancel, btnClear, btnBlank;
+        private System.Windows.Forms.Label lblKeypad, lblLoginText, lblOptionsText, lblWelcome, lblProcessWithdraw;
+        private System.Windows.Forms.Panel pnlScreenBlock, pnlLeftButtons, pnlRightButtons, pnlKeypad;
+        private Label lblAccEnter, lblPinEnter;
+        Label lblEnterCustomWithdraw, lblWithdrawOutcome;
+        private string pinText;
 
-
-        // private System.Windows.Forms.Button btnRaceConditionCheck;
-
+        // create 2D arrays of buttons
+        private System.Windows.Forms.Button[,] btn;
+        private System.Windows.Forms.Button[] btnSelectLeft, btnSelectRight;
 
         // local reference to array of accounts
         private Account[] ac;
@@ -63,6 +61,7 @@ namespace ATM_simulator
         public ATMForm(Account[] ac, bool dataRace)
         {
             InitializeComponent();
+
             InitializeWithdrawal();
             this.ac = ac;
             this.dataRace = dataRace;
@@ -89,46 +88,46 @@ namespace ATM_simulator
         enum ATMState
         {
             LoggedIn,
+            EnteredAccount,
             LoggedOut,
             DisplayingBalance,
-            WithdrawingMoney
+            WithdrawingMoney,
+            ProcessingWithdrawal
 
         }
 
         private void InitializeWithdrawal()
         {
+            lblOptionsText = new Label { Text = "Please select an option listed:", ForeColor = Color.White, BackColor = Color.DodgerBlue, AutoEllipsis = false, AutoSize = true, BorderStyle = BorderStyle.None, Font = new Font("Arial", 20, FontStyle.Regular), MaximumSize = new Size(400, 60), Location = new Point(120, 60), Visible = false };
+            Controls.Add(lblOptionsText);
+            lblOptionsText.BringToFront();
 
-            optionsText = new Label { Text = "Please select an\noption listed", ForeColor = Color.White, BackColor = Color.DodgerBlue, AutoEllipsis = false, AutoSize = true, BorderStyle = BorderStyle.None, Font = new Font("Arial", 30, FontStyle.Regular), MaximumSize = new Size(220, 300), Location = new Point(40, 200) };
-            Controls.Add(optionsText);
-            optionsText.BringToFront();
+            btnWithdraw = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 18, FontStyle.Regular), Text = "Withdraw", Visible = false, Location = new Point(80, 110), Size = new Size(220, 50) };
+            btnCheckBalance = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 18, FontStyle.Regular), Text = "Check Balance", Visible = false, Location = new Point(80, 170), Size = new Size(220, 50) };
+            btnLogout = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 18, FontStyle.Regular), Text = "Logout", Visible = false, Location = new Point(80, 230), Size = new Size(220, 50) };
+            lblBalance = new Label { Location = new Point(120, 100), Size = new Size(400, 60), Visible = false, Font = new Font("Arial", 20, FontStyle.Regular), ForeColor = Color.White, BackColor = Color.DodgerBlue };
+            lblWithdrawInstructions = new Label { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.DodgerBlue, Text = "Choose your withdrawal amount below: ", BorderStyle = BorderStyle.None, Location = new Point(70, 40), Size = new Size(400, 60), Visible = false, Font = new Font("Arial", 18, FontStyle.Regular) };
 
-            btnWithdraw = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "Withdraw", Visible = false, Location = new Point(330, 100), Size = new Size(250, 80) };
-            btnCheckBalance = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "Check Balance", Visible = false, Location = new Point(330, 200), Size = new Size(250, 80) };
-            btnLogout = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "Logout", Visible = false, Location = new Point(330, 300), Size = new Size(250, 80) };
-            lblBalance = new Label { Location = new Point(400, 230), Size = new Size(217, 60), Visible = false, Font = new Font("Arial", 16, FontStyle.Regular) };
-            btnReturntoMenu = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 12, FontStyle.Regular), Text = "Return to Account Menu", Size = new Size(150, 30), Location = new Point(400, 450), Visible = false };
-            lblWithdrawInstructions = new Label { Text = "Choose your withdrawal amount below: ", BorderStyle = BorderStyle.None, Location = new Point(400, 100), Size = new Size(200, 30), Visible = false };
+            btnWithdraw10 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£10", Location = new Point(80,110), Size = new Size(220, 50), Visible = false };
+            btnWithdraw50 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£50", Location = new Point(80, 170), Size = new Size(220, 50), Visible = false };
+            btnWithdraw500 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£500", Location = new Point(80, 230), Size = new Size(220, 50), Visible = false };
+            btnWithdrawCustom = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 18, FontStyle.Regular), Text = "Custom Amount", Location = new Point(320, 110), Size = new Size(220, 50), Visible = false };
+            btnReturntoMenu = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 12, FontStyle.Regular), Text = "Return to Account Menu", Size = new Size(220, 50), Location = new Point(320, 230), Visible = false };
 
-            btnWithdraw10 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£10", Location = new Point(420, 150), Size = new Size(100, 50), Visible = false };
-            btnWithdraw50 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£50", Location = new Point(420, 210), Size = new Size(100, 50), Visible = false };
-            btnWithdraw500 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£500", Location = new Point(420, 270), Size = new Size(100, 50), Visible = false };
-            btnWithdrawCustom = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 18, FontStyle.Regular), Text = "Custom Amount", Location = new Point(370, 330), Size = new Size(200, 60), Visible = false };
+            lblProcessWithdraw = new Label {Text = "Please wait, contacting your bank... ↻", ForeColor = Color.White, BackColor = Color.DodgerBlue, AutoEllipsis = false, AutoSize = true, BorderStyle = BorderStyle.None, Font = new Font("Arial", 26, FontStyle.Regular), MaximumSize = new Size(500, 200), Location = new Point(100, 100), Visible = false };
+            lblEnterCustomWithdraw = new Label { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.DodgerBlue, Text = "Use the keypad to enter a custom withdrawal amount: ", BorderStyle = BorderStyle.None, Location = new Point(80, 100), Size = new Size(500, 200), Visible = false, Font = new Font("Arial", 24, FontStyle.Regular) };
+            lblWithdrawOutcome = new Label { ForeColor = Color.White, BackColor = Color.DodgerBlue, AutoEllipsis = false, AutoSize = true, BorderStyle = BorderStyle.None, Font = new Font("Arial", 26, FontStyle.Regular), MaximumSize = new Size(500, 200), Location = new Point(100, 100), Visible = false };
 
-            //btnRaceConditionCheck = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Text = "Test Race Condition", Visible = false, Location = new Point(325, 230), Size = new Size(150, 30), Font = new Font("Arial", 12, FontStyle.Italic) };
-
-
+            // add functionality to buttons
             btnWithdraw.Click += new EventHandler(this.btnWithdraw_Click);
             btnCheckBalance.Click += new EventHandler(this.btnCheckBalance_Click);
             btnLogout.Click += new EventHandler(this.btnLogout_Click);
             btnReturntoMenu.Click += new EventHandler(this.btnReturntoMenu_Click);
 
-
             btnWithdraw10.Click += new EventHandler(this.btnWithdraw10_Click);
             btnWithdraw50.Click += new EventHandler(this.btnWithdraw50_Click);
             btnWithdraw500.Click += new EventHandler(this.btnWithdraw500_Click);
             btnWithdrawCustom.Click += new EventHandler(this.btnWithdrawCustom_Click);
-
-            //btnRaceConditionCheck.Click += new EventHandler(this.btnRaceConditionCheck_Click);
 
             Controls.Add(lblBalance);
             Controls.Add(btnWithdraw);
@@ -140,93 +139,174 @@ namespace ATM_simulator
             Controls.Add(btnWithdraw50);
             Controls.Add(btnWithdraw500);
             Controls.Add(btnWithdrawCustom);
-            // Controls.Add(btnRaceConditionCheck);
-
+            Controls.Add(lblProcessWithdraw);
+            Controls.Add(lblEnterCustomWithdraw);
+            Controls.Add(lblWithdrawOutcome);
         }
 
         private void InitializeLogin()
         {
-            // create a colored block           
-            colorBlock = new Panel { BackColor = Color.DodgerBlue, Dock = DockStyle.Left, Width = this.Width / 4 + 50 };
-            // add text on top of coloured block
-            welcomeText = new Label { Text = "Hello!\nWelcome to\n our bank ATM", ForeColor = Color.White, BackColor = Color.DodgerBlue, Font = new Font("Arial", 30, FontStyle.Regular), BorderStyle = BorderStyle.None, TextAlign = ContentAlignment.MiddleRight, AutoEllipsis = false, Size = new Size(230, 300), Location = new Point(40, 200) };
-            logo = new PictureBox { SizeMode = PictureBoxSizeMode.StretchImage, Size = new Size(150, 150), Location = new Point(60, 50) };
-            string imageUrl = "https://png.pngtree.com/png-vector/20190225/ourmid/pngtree-concept-banking-logo-png-image_712961.jpg";// get the image from the website
-            using (System.Net.WebClient webClient = new System.Net.WebClient())
+            // create a colored block for the screen       
+            pnlScreenBlock = new Panel { BackColor = Color.DodgerBlue, Dock = DockStyle.Top, Height = 300 };
+            Controls.Add(pnlScreenBlock);
+            pnlScreenBlock.SendToBack();
+
+            // create panels for the buttons on left and right hand side
+            pnlLeftButtons = new Panel { BackColor = Color.Silver, Dock = DockStyle.Left, Width = 50 };
+            Controls.Add(pnlLeftButtons);
+
+            pnlRightButtons = new Panel { BackColor = Color.Silver, Dock = DockStyle.Right, Width = 50 };
+            Controls.Add(pnlRightButtons);
+
+            // panel for the keypad
+            pnlKeypad = new Panel { BackColor = Color.Silver, Dock = DockStyle.Bottom, Width = this.Width, Height = 360 };
+            Controls.Add(pnlKeypad);
+
+            // create keypad
+            btn = new System.Windows.Forms.Button[3, 4];
+            // set up buttons
+            int num = 1;
+            for (int y = 0; y < btn.GetLength(1); y++)
             {
-                byte[] imageData = webClient.DownloadData(imageUrl);
-                using (System.IO.MemoryStream memoryStream = new System.IO.MemoryStream(imageData))
+                for (int x = 0; x < btn.GetLength(0); x++)
                 {
-                    logo.Image = Image.FromStream(memoryStream); // add the image to the picture box
+                    btn[x, y] = new System.Windows.Forms.Button { Location = new Point(90 + (80 * x), 310 + (80 * y)), Height = 75, Width = 75, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Flat, Font = new Font("Arial", 20, FontStyle.Regular) };
+                    btn[x, y].Click += new EventHandler(this.btnEvent_Click);
+                    if (y < 3)
+                    {
+                        btn[x, y].Text = Convert.ToString(num);
+                    }
+                    else
+                    {
+                        if (x == 1)
+                        {
+                            btn[x, y].Text = "0";
+                        }
+                        else
+                        {
+                            btn[x, y].Text = "";
+                        }
+                    }
+                    Controls.Add(btn[x, y]);
+                    btn[x, y].BringToFront();
+                    num++;
                 }
             }
-            Controls.Add(logo);
-            logo.BringToFront();
-            Controls.Add(welcomeText);
-            welcomeText.BringToFront();
-            Controls.Add(colorBlock);
 
-
-            int stripeWidth = colorBlock.Width;
-            int stripeHeight = colorBlock.Height / 4;
-            diagonalStripePanel = new Panel { BackColor = Color.Transparent, Size = new Size(stripeWidth, stripeHeight), Location = new Point(0, 0) };
-            diagonalStripePanel.Paint += (sender, e) =>
+            // create buttons to select options on the screen
+            btnSelectLeft = new System.Windows.Forms.Button[3];
+            // set up buttons
+            num = 1;
+            for (int x = 0; x < btnSelectLeft.GetLength(0); x++)
             {
-                using (Pen pen = new Pen(Color.DeepSkyBlue, 20)) // adjust the color and width of the line as needed
-                {
-                    // draw the diagofnal line from top left to bottom right
-                    e.Graphics.DrawLine(pen, 0, 0, diagonalStripePanel.Width, diagonalStripePanel.Height);
-                }
-            };
-            colorBlock.Controls.Add(diagonalStripePanel);
-            diagonalStripePanel.BringToFront();
+                btnSelectLeft[x] = new System.Windows.Forms.Button { Location = new Point(5, 120 + (60 * x)), Height = 40, Width = 40, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Popup };
+                //btnSelectLeftLeft[x, y].Click += new EventHandler(this.btnEvent_Click);
+                Controls.Add(btnSelectLeft[x]);
+                btnSelectLeft[x].BringToFront();
+                num++;
+            }
+
+            btnSelectRight = new System.Windows.Forms.Button[3];
+            // set up buttons
+            num = 1;
+            for (int x = 0; x < btnSelectRight.GetLength(0); x++)
+            {
+                btnSelectRight[x] = new System.Windows.Forms.Button { Location = new Point(590, 120 + (60 * x)), Height = 40, Width = 40, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Popup };
+                Controls.Add(btnSelectRight[x]);
+                btnSelectRight[x].BringToFront();
+                num++;
+            }
+
 
             //add text
-            loginText = new Label { Text = "Login to your account to use our bank", ForeColor = Color.DodgerBlue, BackColor = Color.White, Font = new Font("Arial", 20, FontStyle.Regular), BorderStyle = BorderStyle.None, AutoSize = true, AutoEllipsis = false, MaximumSize = new Size(300, 900), Location = new Point(300, 100) };
-            Controls.Add(loginText);
-            loginText.BringToFront();
+            lblLoginText = new Label { Text = "Login to your account to start", ForeColor = Color.White, BackColor = Color.DodgerBlue, Font = new Font("Arial", 20, FontStyle.Regular), BorderStyle = BorderStyle.None, AutoSize = true, AutoEllipsis = false, MaximumSize = new Size(400, 900), Location = new Point(120, 60) };
+            Controls.Add(lblLoginText);
+            lblLoginText.BringToFront();
 
+            //add text
+            lblWelcome = new Label { ForeColor = Color.White, BackColor = Color.DodgerBlue, Font = new Font("Arial", 20, FontStyle.Regular), BorderStyle = BorderStyle.None, AutoSize = true, AutoEllipsis = false, MaximumSize = new Size(400, 900), Location = new Point(120, 60) };
+            Controls.Add(lblLoginText);
+            lblLoginText.BringToFront();
 
-            // confirm button 
-            btnConfirm = new System.Windows.Forms.Button { Text = "Login", ForeColor = Color.White, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 12, FontStyle.Regular), Location = new Point(350, 320), Size = new Size(150, 60), BackColor = Color.DodgerBlue };
-            btnConfirm.Click += new EventHandler(this.btnConfirm_Click);
-            Controls.Add(this.btnConfirm);
+            //display enter account message
+            lblAccEnter = new Label { Text = "Use the keypad to enter your 6-digit account number 🔑: ", Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(120, 120), Size = new Size(400, 100), BackColor = Color.DodgerBlue, ForeColor = Color.White };
+            Controls.Add(lblAccEnter);
+            lblAccEnter.BringToFront();
 
-            //text box for account number
-            txtAccNum = new System.Windows.Forms.TextBox { Location = new Point(390, 200), Size = new Size(350, 40), Font = new Font("Arial", 26, FontStyle.Regular), BorderStyle = BorderStyle.None, };
-            Controls.Add(txtAccNum);
+            //text box for pin and account number
+            lblKeypad = new System.Windows.Forms.Label { Location = new Point(120, 200), Size = new Size(350, 40), Font = new Font("Arial", 26, FontStyle.Regular), BorderStyle = BorderStyle.None, BackColor = Color.Silver, ForeColor = Color.Black };
+            Controls.Add(lblKeypad);
+            lblKeypad.BringToFront();
 
-            //display a single character next to the account number box
-            accNumSymbol = new Label { Text = "🔑", Font = new Font("Arial", 22, FontStyle.Regular), Location = new Point(350, 200), Size = new Size(40, 40), BackColor = Color.White, };
-            Controls.Add(accNumSymbol);
+            // cancel button 
+            btnCancel = new System.Windows.Forms.Button { Text = "Cancel", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 310), Size = new Size(150, 75), BackColor = Color.Red };
+            btnCancel.Click += new EventHandler(this.btnCancel_Click);
+            Controls.Add(this.btnCancel);
+            btnCancel.BringToFront();
 
-            //text box for acc pin
-            txtPin = new System.Windows.Forms.TextBox { Location = new Point(390, 250), Size = new Size(350, 40), Font = new Font("Arial", 26, FontStyle.Regular), BorderStyle = BorderStyle.None, };
-            Controls.Add(txtPin);
+            // clear  button
+            btnClear = new System.Windows.Forms.Button { Text = "Clear", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 390), Size = new Size(150, 75), BackColor = Color.Yellow };
+            btnClear.Click += new EventHandler(this.btnClear_Click);
+            Controls.Add(this.btnClear);
+            btnClear.BringToFront();
 
-            //display a single character next to the pin number box
-            accPinSymbol = new Label { Text = "🔓", Font = new Font("Arial", 22, FontStyle.Regular), Location = new Point(350, 250), Size = new Size(40, 40), BackColor = Color.White, };
-            Controls.Add(accPinSymbol);
+            // enter button
+            btnEnter = new System.Windows.Forms.Button { Text = "Enter", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 470), Size = new Size(150, 75), BackColor = Color.Lime };
+            btnEnter.Click += new EventHandler(this.btnEnter_Click);
+            Controls.Add(this.btnEnter);
+            btnEnter.BringToFront();
+
+            // blank button
+            btnBlank = new System.Windows.Forms.Button { Text = "", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 550), Size = new Size(150, 75), BackColor = Color.LightSlateGray };
+            Controls.Add(this.btnBlank);
+            btnBlank.BringToFront();
+
+            //display a message to enter the user's pin
+            lblPinEnter = new Label { Text = "Please enter your 4-digit pin 🔓:", Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(120, 120), Size = new Size(400, 80), BackColor = Color.DodgerBlue, ForeColor = Color.White, Visible = false };
+            Controls.Add(lblPinEnter);
+            lblPinEnter.BringToFront();
         }
 
-        /* i think it should work the user does it manually rather than on a button click - to make it more like how it would actually work
-        private void btnRaceConditionCheck_Click(object sender, EventArgs e)
+        /**
+         * Event handler for keypad buttons
+         * Make text appear on label
+         */
+        void btnEvent_Click(object sender, EventArgs e)
         {
-            concurrentWithdrawals(100);
-        }*/
-
-        private void btnWithdrawCustom_Click(object sender, EventArgs e)
-        {
-            string input = Microsoft.VisualBasic.Interaction.InputBox("Enter a withdrawal amount:", "Custom Withdrawal", "0", -1, -1);
-            if (int.TryParse(input, out int customAmount) && customAmount > 0)
+            // display *s if the user is entering their password
+            if (currentState == ATMState.EnteredAccount)
             {
-                doWithdrawal(customAmount);
+                pinText += ((System.Windows.Forms.Button)sender).Text;
+                lblKeypad.Text += "*";
+                Console.WriteLine(pinText);
             }
             else
             {
-                MessageBox.Show("Insufficient funds ");
+                lblKeypad.Text += ((System.Windows.Forms.Button)sender).Text;
             }
 
+        }
+
+        /**
+         * Clear text from the enter info label
+         */
+        void btnClear_Click(object sender, EventArgs e)
+        {
+            lblKeypad.Text = "";
+            pinText = "";
+        }
+
+        void btnCancel_Click(object sender, EventArgs e)
+        {
+            currentState = ATMState.LoggedOut;
+            updateUI(currentState);
+        }
+
+        private void btnWithdrawCustom_Click(object sender, EventArgs e)
+        {
+            resetUI();
+            lblEnterCustomWithdraw.Visible = true;
+            lblKeypad.Visible = true; 
         }
 
         private void btnWithdraw50_Click(object sender, EventArgs e)
@@ -264,21 +344,25 @@ namespace ATM_simulator
             btnWithdraw50.Visible = false;
             btnWithdraw500.Visible = false;
             btnWithdrawCustom.Visible = false;
-            // btnRaceConditionCheck.Visible = false;
-
-
-            //Design objects 
-            txtAccNum.Visible = false;
-            txtPin.Visible = false;
-            btnConfirm.Visible = false;
-            accPinSymbol.Visible = false;
-            accNumSymbol.Visible = false;
-            colorBlock.Visible = true;
-            welcomeText.Visible = false;
-            logo.Visible = false;
-            loginText.Visible = false;
-            diagonalStripePanel.Visible = false;
-            optionsText.Visible = false;
+            lblPinEnter.Visible = false;
+            lblAccEnter.Visible = false;
+            lblKeypad.Visible = false;
+            lblLoginText.Visible = false;
+            lblOptionsText.Visible = false;
+            lblWelcome.Visible = false;
+            lblProcessWithdraw.Visible=false;
+            lblEnterCustomWithdraw.Visible = false;
+            lblWithdrawOutcome.Visible = false;
+            lblKeypad.Text = "";
+            // remove event handlers form side buttons
+            btnSelectLeft[0].Click -= btnWithdraw_Click;
+            btnSelectLeft[1].Click -= btnCheckBalance_Click;
+            btnSelectLeft[2].Click -= btnLogout_Click;
+            btnSelectRight[0].Click -= btnWithdrawCustom_Click;
+            btnSelectRight[2].Click -= btnReturntoMenu_Click;
+            btnSelectLeft[0].Click -= btnWithdraw10_Click;
+            btnSelectLeft[1].Click -= btnWithdraw50_Click;
+            btnSelectLeft[2].Click -= btnWithdraw500_Click;
         }
 
 
@@ -287,8 +371,7 @@ namespace ATM_simulator
         // "change the operation so that rather than exiting when a person takes
         // their card(option 3), the system goes back to the beginning
         private void btnLogout_Click(object sender, EventArgs e)
-        {
-
+        { 
             currentState = ATMState.LoggedOut;
             updateUI(currentState);
         }
@@ -310,76 +393,102 @@ namespace ATM_simulator
             updateUI(currentState);
         }
 
-        // think this should be done manaully rather than automatically in code
-        private void concurrentWithdrawals(int withdrawalAmount)
-        {
-            // creating two threads and decremeting balance of the active account
-            /* var atm1Thread = new Thread(() => activeAccount?.decrementBalance(withdrawalAmount));
-             var atm2Thread = new Thread(() => activeAccount?.decrementBalance(withdrawalAmount));
-
-             atm1Thread.Start();
-             atm2Thread.Start();
-
-             atm1Thread.Join();
-             atm2Thread.Join();
-
-             // invoking method on UI thread using MethodInvoker https://stackoverflow.com/questions/36471563/c-sharp-this-invokemethodinvokerdelegate
-             this.Invoke((MethodInvoker)delegate
-             {
-                 MessageBox.Show($"final balance after concurrent withdrawals: {activeAccount.getBalance()}");
-             });*/
-        }
-
         private void doWithdrawal(int amount)
-        { 
+        {
+            currentState = ATMState.ProcessingWithdrawal;
+            updateUI(currentState);
+            lblProcessWithdraw.Visible = true;
+            Application.DoEvents(); // redraw GUI before doing withdrawal
             Thread.Sleep(2000);
+            
             if (activeAccount != null && activeAccount.decrementBalance(amount, dataRace))
             {
-                MessageBox.Show($"Withdrawal successful, New balance : £{activeAccount.getBalance()} ");
+                lblWithdrawOutcome.Text = $"Withdrawal successful \nNew balance : £{activeAccount.getBalance()} ";
+                lblWithdrawOutcome.Visible = true;
+                lblProcessWithdraw.Visible = false;
             }
             else
             {
-                MessageBox.Show("Insufficient funds");
+                lblWithdrawOutcome.Text = "Insufficient funds";
+                lblWithdrawOutcome.Visible = true;
+                lblProcessWithdraw.Visible = false;
             }
+            btnReturntoMenu.Visible = true;
         }
 
-        private void btnConfirm_Click(object sender, EventArgs e)
+        private void btnEnter_Click(object sender, EventArgs e)
         {
-
-            if (string.IsNullOrWhiteSpace(txtAccNum.Text) || string.IsNullOrWhiteSpace(txtPin.Text))
+            // first check if entering acount number, pin, or custom amount
+            if (currentState == ATMState.LoggedOut) // user is entering account number
             {
-                MessageBox.Show("Enter your account number and PIN before pressing confirm");
-                return;
-            }
-
-            if (!int.TryParse(txtAccNum.Text, out int accountNumber) || accountNumber <= 0)
-            {
-                MessageBox.Show("Please enter a valid account number.");
-                return;
-            }
-
-            if (!int.TryParse(txtPin.Text, out int pin) || pin <= 0)
-            {
-                MessageBox.Show("Please enter a valid PIN.");
-                return;
-            }
-
-            activeAccount = findAccount(int.Parse(txtAccNum.Text));
-            if (activeAccount != null)
-            {
-                if (activeAccount.checkPin(int.Parse(txtPin.Text)))
+                if (string.IsNullOrWhiteSpace(lblKeypad.Text))
                 {
+                    lblAccEnter.Text = ("Enter your account number before pressing enter 🔑:");
+                    return;
+                }
+
+                if (!int.TryParse(lblKeypad.Text, out int accountNumber) || accountNumber <= 0)
+                {
+                    lblAccEnter.Text = ("Please enter a valid account number 🔑:");
+                    lblKeypad.Text = "";
+                    return;
+                }
+
+                activeAccount = findAccount(int.Parse(lblKeypad.Text));
+                if (activeAccount != null)
+                {
+                    // if we reach here, it is a valid account, so display request for pin
+                    currentState = ATMState.EnteredAccount;
+                    updateUI(currentState);
+                    return;
+                }
+                else
+                {
+                    lblAccEnter.Text = "Please enter a valid account number 🔑:";
+                    lblKeypad.Text = "";
+                    return;
+                }
+            }
+            else if (currentState == ATMState.WithdrawingMoney) // user is entering a custom amount
+            {
+                if (string.IsNullOrWhiteSpace(lblKeypad.Text))
+                {
+                    lblEnterCustomWithdraw.Text = "Enter your custom amount before pressing enter: ";
+                    return;
+                }
+                int customAmount = int.Parse(lblKeypad.Text);
+                doWithdrawal(customAmount);
+            }
+            else // user is entering pin
+            {
+                if (string.IsNullOrWhiteSpace(lblKeypad.Text))
+                {
+                    lblPinEnter.Text = "Enter your pin number before pressing enter 🔓:";
+                    pinText = "";
+                    return;
+                }
+                if (!int.TryParse(pinText, out int pin) || pin <= 0)
+                {
+                    lblPinEnter.Text = "Please enter a valid PIN 🔓:";
+                    lblKeypad.Text = "";
+                    pinText = "";
+                    return;
+                }
+                // othwerwise, check that the pin matches the account
+                if (activeAccount.checkPin(int.Parse(pinText)))
+                {
+                    lblKeypad.Text = "";
+                    pinText = "";
                     currentState = ATMState.LoggedIn;
+                    lblWelcome.Text = "Welcome, " + activeAccount.GetAccountNum() + "!";
                     updateUI(currentState);
                 }
                 else
                 {
-                    MessageBox.Show("Invalid PIN");
+                    lblPinEnter.Text = "Please enter a valid PIN 🔓:";
+                    lblKeypad.Text = "";
+                    pinText = "";
                 }
-            }
-            else
-            {
-                MessageBox.Show("Account not found");
             }
         }
 
@@ -396,14 +505,25 @@ namespace ATM_simulator
                     btnCheckBalance.Visible = true;
                     btnWithdraw.Visible = true;
                     btnLogout.Visible = true;
-                    optionsText.Visible = true;
-
+                    lblWelcome.Visible = true;
+                    lblOptionsText.Visible = true;
+                    btnSelectLeft[0].Click += new EventHandler(this.btnWithdraw_Click);
+                    btnSelectLeft[1].Click += new EventHandler(this.btnCheckBalance_Click);
+                    btnSelectLeft[2].Click += new EventHandler(this.btnLogout_Click);
                     break;
-                case ATMState.DisplayingBalance:
+                case ATMState.EnteredAccount:
+                    lblKeypad.Text = "";
+                    lblKeypad.Visible = true;
+                    lblLoginText.Visible = true;
+                    lblPinEnter.Visible = true;
+                    break;
 
+                case ATMState.DisplayingBalance:
                     lblBalance.Visible = true;
                     btnReturntoMenu.Visible = true;
+                    btnSelectRight[2].Click += btnReturntoMenu_Click;
                     break;
+
                 case ATMState.WithdrawingMoney:
                     lblWithdrawInstructions.Visible = true;
                     btnWithdraw10.Visible = true;
@@ -411,27 +531,23 @@ namespace ATM_simulator
                     btnWithdraw500.Visible = true;
                     btnWithdrawCustom.Visible = true;
                     btnReturntoMenu.Visible = true;
-                    //btnRaceConditionCheck.Visible = true;
-                    optionsText.Visible = true;
+                    btnSelectRight[0].Click += btnWithdrawCustom_Click;
+                    btnSelectRight[2].Click += btnReturntoMenu_Click;
+                    btnSelectLeft[0].Click += btnWithdraw10_Click;
+                    btnSelectLeft[1].Click += btnWithdraw50_Click;
+                    btnSelectLeft[2].Click += btnWithdraw500_Click;
                     break;
-                case ATMState.LoggedOut:
 
-                    txtAccNum.Visible = true;
-                    txtPin.Visible = true;
-                    btnConfirm.Visible = true;
+                case ATMState.LoggedOut:
                     activeAccount = null;
-                    txtAccNum.Text = "";
-                    txtPin.Text = "";
-                    txtAccNum.Visible = true;
-                    txtPin.Visible = true;
-                    accPinSymbol.Visible = true;
-                    accNumSymbol.Visible = true;
-                    colorBlock.Visible = true;
-                    welcomeText.Visible = true;
-                    logo.Visible = true;
-                    loginText.Visible = true;
-                    diagonalStripePanel.Visible = true;
-                    optionsText.Visible = false;
+                    lblKeypad.Text = "";
+                    lblKeypad.Visible = true;
+                    lblLoginText.Visible = true;
+                    lblAccEnter.Visible = true;
+                    break;
+
+                case ATMState.ProcessingWithdrawal:
+                    lblProcessWithdraw.Visible = true;
                     break;
 
             }
@@ -447,6 +563,10 @@ namespace ATM_simulator
         bool dataRace = false; // to know if there is a data race or not to use for setup
         Thread atmThread1, atmThread2; // create threads
 
+        private System.Windows.Forms.Label welcomeText;
+        private System.Windows.Forms.Panel colorBlock;
+        private System.Windows.Forms.PictureBox logo;
+        private System.Windows.Forms.Panel diagonalStripePanel;
 
         /*
          * This fucntions initilises the 3 accounts 
@@ -468,9 +588,45 @@ namespace ATM_simulator
             this.Text = "ATM Bank Computer";
             this.btnLaunchATMRace = new System.Windows.Forms.Button();
             this.btnLaunchATMNonRace = new System.Windows.Forms.Button();
+            this.Size = new Size(700, 500);
 
-            this.btnLaunchATMRace = new System.Windows.Forms.Button { Text = "Launch 2 ATMs (Data Race Version)", Location = new Point(10, 10), Size = new Size(120, 50), TabIndex = 0, UseVisualStyleBackColor = true };
-            this.btnLaunchATMNonRace = new System.Windows.Forms.Button { Text = "Launch 2 ATMs (Non-Data Race Version)", Location = new Point(150, 10), Size = new Size(120, 50), TabIndex = 0, UseVisualStyleBackColor = true };
+            // create a colored block           
+            colorBlock = new Panel { BackColor = Color.DodgerBlue, Dock = DockStyle.Left, Width = this.Width / 2 };
+            // add text on top of coloured block
+            welcomeText = new Label { Text = "Hello!\nWelcome to\n our bank", ForeColor = Color.White, BackColor = Color.DodgerBlue, Font = new Font("Arial", 30, FontStyle.Regular), BorderStyle = BorderStyle.None, TextAlign = ContentAlignment.MiddleRight, AutoEllipsis = false, Size = new Size(300, 300), Location = new Point(40, 200) };
+            logo = new PictureBox { SizeMode = PictureBoxSizeMode.StretchImage, Size = new Size(150, 150), Location = new Point(100, 50) };
+            string imageUrl = "https://png.pngtree.com/png-vector/20190225/ourmid/pngtree-concept-banking-logo-png-image_712961.jpg";// get the image from the website
+            using (System.Net.WebClient webClient = new System.Net.WebClient())
+            {
+                byte[] imageData = webClient.DownloadData(imageUrl);
+                using (System.IO.MemoryStream memoryStream = new System.IO.MemoryStream(imageData))
+                {
+                    logo.Image = Image.FromStream(memoryStream); // add the image to the picture box
+                }
+            }
+            Controls.Add(logo);
+            logo.BringToFront();
+            Controls.Add(welcomeText);
+            welcomeText.BringToFront();
+            Controls.Add(colorBlock);
+
+
+            int stripeWidth = colorBlock.Width;
+            int stripeHeight = colorBlock.Height / 3;
+            diagonalStripePanel = new Panel { BackColor = Color.Transparent, Size = new Size(stripeWidth, stripeHeight), Location = new Point(0, 0) };
+            diagonalStripePanel.Paint += (sender, e) =>
+            {
+                using (Pen pen = new Pen(Color.DeepSkyBlue, 20)) // adjust the color and width of the line as needed
+                {
+                    // draw the diagofnal line from top left to bottom right
+                    e.Graphics.DrawLine(pen, 0, 0, diagonalStripePanel.Width, diagonalStripePanel.Height);
+                }
+            };
+            colorBlock.Controls.Add(diagonalStripePanel);
+            diagonalStripePanel.BringToFront();
+
+            this.btnLaunchATMRace = new System.Windows.Forms.Button { Text = "Launch 2 ATMs (Data Race)", Location = new Point(420, 150), Size = new Size(220, 80), TabIndex = 0, UseVisualStyleBackColor = true, BackColor = Color.MediumBlue, ForeColor = Color.White, Font = new Font("Arial", 18, FontStyle.Regular) };
+            this.btnLaunchATMNonRace = new System.Windows.Forms.Button { Text = "Launch 2 ATMs (Non-Data Race)", Location = new Point(420, 250), Size = new Size(220, 80), TabIndex = 0, UseVisualStyleBackColor = true, BackColor = Color.MediumBlue, ForeColor = Color.White, Font = new Font("Arial", 18, FontStyle.Regular) };
             this.btnLaunchATMRace.Click += new EventHandler(this.BtnLaunchATMRace_Click);
             this.btnLaunchATMNonRace.Click += new EventHandler(this.BtnLaunchATMNonRace_Click);
             Controls.Add(this.btnLaunchATMRace);
