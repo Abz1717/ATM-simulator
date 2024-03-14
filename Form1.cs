@@ -17,10 +17,6 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ATM_simulator
 {
-
-
-
-
     /**
      * Main ATM class which is a form
      */
@@ -399,6 +395,7 @@ namespace ATM_simulator
             updateUI(currentState);
             lblProcessWithdraw.Visible = true;
             Application.DoEvents(); // redraw GUI before doing withdrawal
+
             Thread.Sleep(2000);
             
             if (activeAccount != null && activeAccount.decrementBalance(amount, dataRace))
@@ -561,7 +558,7 @@ namespace ATM_simulator
         private System.Windows.Forms.Button btnLaunchATMRace;
         private System.Windows.Forms.Button btnLaunchATMNonRace;
         bool dataRace = false; // to know if there is a data race or not to use for setup
-        Thread atmThread1, atmThread2; // create threads
+        Thread atmThread1, atmThread2, atmThread3, atmThread4; // create threads
 
         private System.Windows.Forms.Label welcomeText;
         private System.Windows.Forms.Panel colorBlock;
@@ -633,7 +630,7 @@ namespace ATM_simulator
             Controls.Add(this.btnLaunchATMNonRace);
         }
 
-
+        // possibly could have atm creation in some sort of loop but they are done separately for now
         private void BtnLaunchATMRace_Click(object sender, EventArgs e)
         {
             // run two separate ATMs on two different threads - we need to have them running on separate threads from the stater
@@ -644,7 +641,6 @@ namespace ATM_simulator
             atmThread1.Start();
 
             atmThread2 = new Thread(new ThreadStart(this.RunATM2));
-            //atmThread2.IsBackground = true; if we want the thread all threads to close after main thread closure. 
             atmThread2.Start();
         }
 
@@ -652,19 +648,20 @@ namespace ATM_simulator
         private void BtnLaunchATMNonRace_Click(object sender, EventArgs e)
         {
             dataRace = false;
+
             atmThread1 = new Thread(new ThreadStart(this.RunATM1));
             //atmThread1.IsBackground = true; if we want the thread all threads to close after main thread closure.
             atmThread1.Start();
 
             atmThread2 = new Thread(new ThreadStart(this.RunATM2));
-            //atmThread2.IsBackground = true; if we want the thread all threads to close after main thread closure. 
             atmThread2.Start();
         }
 
         // create first ATM form and run
         private void RunATM1()
         {
-            ATMForm atmForm1 = new ATMForm(ac,dataRace);
+            ATMForm atmForm1 = new ATMForm(ac, dataRace);
+            atmForm1.Icon = Properties.Resources.atmIcon;
             atmForm1.Size = new Size(650, 700);
             atmForm1.StartPosition = FormStartPosition.Manual;
             atmForm1.Location = new Point(0, 0);
@@ -679,10 +676,11 @@ namespace ATM_simulator
             Application.Run(atmForm1);
         }
 
-        // create secind ATM form and run
+        // create second ATM form and run
         private void RunATM2()
         {
-            ATMForm atmForm2 = new ATMForm(ac,dataRace);
+            ATMForm atmForm2 = new ATMForm(ac, dataRace);
+            atmForm2.Icon = Properties.Resources.atmIcon;
             atmForm2.Size = new Size(650, 700);
             atmForm2.StartPosition = FormStartPosition.Manual;
             atmForm2.Location = new Point(640, 0);
@@ -780,7 +778,7 @@ namespace ATM_simulator
                     return true;
                 }
 
-                
+
             }
             else
             {
