@@ -43,6 +43,10 @@ namespace ATM_simulator
         private Label lblAttempts;
         private int? enteredAcc = null;
         private PictureBox lockPictureBox;
+        private System.Windows.Forms.Timer sessionTimer;
+        private Label lblTimeout;
+        private System.Windows.Forms.Button btnTimeoutLogIn;
+
 
         // create 2D arrays of buttons
         private System.Windows.Forms.Button[,] btn;
@@ -55,12 +59,11 @@ namespace ATM_simulator
         //this is a referance to the account that is being used
         private Account activeAccount = null;
 
-
-
+        // setting starting attemps
         private int accountNumberAttempts = 0;
         private int pinAttempts = 0;
 
-        // Maximum attempts constants
+        // setting maximum attempts
         private const int MaxAccountNumberAttempts = 5;
         private const int MaxPinAttempts = 3;
 
@@ -78,6 +81,8 @@ namespace ATM_simulator
             this.BackColor = Color.White;
             this.Size = new Size(900, 600);
             InitializeLogin();
+
+            InitializeTimer();
 
 
         }
@@ -101,9 +106,11 @@ namespace ATM_simulator
             LoggedOut,
             DisplayingBalance,
             WithdrawingMoney,
-            ProcessingWithdrawal
+            ProcessingWithdrawal,
+            TimedOut,
 
         }
+
 
         private void InitializeControls()
         {
@@ -137,6 +144,7 @@ namespace ATM_simulator
 
             btnWithdraw10.Click += new EventHandler(this.btnWithdraw10_Click);
             btnWithdraw50.Click += new EventHandler(this.btnWithdraw50_Click);
+            
             btnWithdraw500.Click += new EventHandler(this.btnWithdraw500_Click);
             btnWithdrawCustom.Click += new EventHandler(this.btnWithdrawCustom_Click);
 
@@ -153,7 +161,18 @@ namespace ATM_simulator
             Controls.Add(lblProcessWithdraw);
             Controls.Add(lblEnterCustomWithdraw);
             Controls.Add(lblWithdrawOutcome);
+
+
+            lblTimeout = new Label { Text = "Your session has timed out. ⏱︎ ", ForeColor = Color.White, BackColor = Color.DodgerBlue, Font = new Font("Arial", 20, FontStyle.Regular), BorderStyle = BorderStyle.None, AutoSize = true, AutoEllipsis = false, MaximumSize = new Size(400, 900), Location = new Point(120, 60), Visible = false};
+            Controls.Add(lblTimeout);
+            lblTimeout.BringToFront();
+
+            btnTimeoutLogIn = new System.Windows.Forms.Button { Text = "Log Back In?", ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 12, FontStyle.Regular), Size = new Size(220, 50), Location = new Point(320, 230), Visible = false};
+            btnTimeoutLogIn.Click += new EventHandler(this.BtnTimeoutLogin_Click);
+            Controls.Add(btnTimeoutLogIn);
+
         }
+
 
         private void InitializeLogin()
         {
@@ -229,7 +248,7 @@ namespace ATM_simulator
             }
 
             
-            // lockk picture
+            // lock picture
             lockPictureBox = new PictureBox { Size = new Size(width: 90, height: 90), BackColor = this.BackColor, SizeMode = PictureBoxSizeMode.Zoom, Location = new Point(255, 10), Visible = false, Image = Properties.Resources.padlock }; Controls.Add(lockPictureBox);
             lockPictureBox.BringToFront();
 
@@ -282,12 +301,53 @@ namespace ATM_simulator
             lblPinEnter.BringToFront();
         }
 
+
+        // Timer to timeout atm session when user is inactive
+        private void InitializeTimer()
+        {
+            sessionTimer = new System.Windows.Forms.Timer { Interval = 60000 };
+            sessionTimer.Tick += SessionTimer_Tick;
+        }
+
+        private void SessionTimer_Tick(object sender, EventArgs e)
+        {
+            sessionTimer.Stop();
+
+            // logging the user out
+            currentState = ATMState.TimedOut;
+            updateUI(currentState);
+
+
+        }
+
+        private void BtnTimeoutLogin_Click(object sender, EventArgs e)
+        {
+            lblTimeout.Visible = false;
+            btnTimeoutLogIn.Visible = false;
+
+            currentState = ATMState.LoggedOut;
+            updateUI(currentState);
+
+            //clearing out previous pin attempts if the user wants to log back in.
+            pinAttempts = 0;
+    }
+
+    private void ResetSessionTimer()
+        {
+            if (currentState == ATMState.LoggedIn)
+            {
+                sessionTimer.Stop();
+                sessionTimer.Start();
+            }
+        }
+
         /**
          * Event handler for keypad buttons
          * Make text appear on label
          */
         void btnEvent_Click(object sender, EventArgs e)
         {
+            
             // display *s if the user is entering their password
             if (currentState == ATMState.EnteredAccount)
             {
@@ -300,6 +360,9 @@ namespace ATM_simulator
                 lblKeypad.Text += ((System.Windows.Forms.Button)sender).Text;
             }
 
+            // user interaction, reset the timer
+            ResetSessionTimer();
+
         }
 
         /**
@@ -309,40 +372,55 @@ namespace ATM_simulator
         {
             lblKeypad.Text = "";
             pinText = "";
+
+            ResetSessionTimer();
         }
 
         void btnCancel_Click(object sender, EventArgs e)
         {
             currentState = ATMState.LoggedOut;
             updateUI(currentState);
+
+            ResetSessionTimer();
+
         }
 
         private void btnWithdrawCustom_Click(object sender, EventArgs e)
         {
             resetUI();
             lblEnterCustomWithdraw.Visible = true;
-            lblKeypad.Visible = true; 
+            lblKeypad.Visible = true;
+
+            ResetSessionTimer();
         }
 
         private void btnWithdraw50_Click(object sender, EventArgs e)
         {
             doWithdrawal(50);
+
+            ResetSessionTimer();
         }
 
         private void btnWithdraw500_Click(object sender, EventArgs e)
         {
             doWithdrawal(500);
+
+            ResetSessionTimer();
         }
 
         private void btnWithdraw10_Click(object sender, EventArgs e)
         {
             doWithdrawal(10);
+
+            ResetSessionTimer();
         }
 
         private void btnReturntoMenu_Click(object sender, EventArgs e)
         {
             currentState = ATMState.LoggedIn;
             updateUI(currentState);
+
+            ResetSessionTimer();
         }
 
 
@@ -370,6 +448,8 @@ namespace ATM_simulator
             lblWithdrawOutcome.Visible = false;
             lblKeypad.Text = "";
             lockPictureBox.Visible = false;
+            lblTimeout.Visible = false;
+            btnTimeoutLogIn.Visible = false;    
 
 
             // remove event handlers form side buttons
@@ -389,9 +469,13 @@ namespace ATM_simulator
         // "change the operation so that rather than exiting when a person takes
         // their card(option 3), the system goes back to the beginning
         private void btnLogout_Click(object sender, EventArgs e)
-        { 
+        {
+
             currentState = ATMState.LoggedOut;
             updateUI(currentState);
+
+             
+            sessionTimer.Stop();
         }
 
         private void btnCheckBalance_Click(object sender, EventArgs e)
@@ -403,12 +487,15 @@ namespace ATM_simulator
             {
                 this.lblBalance.Text = "Your current balance is : " + activeAccount.getBalance();
             }
+            ResetSessionTimer();
         }
 
         private void btnWithdraw_Click(object sender, EventArgs e)
         {
             currentState = ATMState.WithdrawingMoney;
             updateUI(currentState);
+
+            ResetSessionTimer();
         }
 
         private void doWithdrawal(int amount)
@@ -519,6 +606,8 @@ namespace ATM_simulator
                 // othwerwise, check that the pin matches the account
                 if (activeAccount.checkPin(int.Parse(pinText)))
                 {
+                    sessionTimer.Start();
+
                     lblKeypad.Text = "";
                     pinText = "";
                     currentState = ATMState.LoggedIn;
@@ -533,6 +622,7 @@ namespace ATM_simulator
                     pinText = "";
                 }
             }
+            ResetSessionTimer();
         }
 
         // might not be needed
@@ -652,6 +742,11 @@ namespace ATM_simulator
 
                 case ATMState.ProcessingWithdrawal:
                     lblProcessWithdraw.Visible = true;
+                    break;
+
+                case ATMState.TimedOut:
+                    lblTimeout.Visible = true;
+                    btnTimeoutLogIn.Visible = true;
                     break;
 
             }
