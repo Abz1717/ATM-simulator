@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -14,6 +15,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.IO;
+
 
 namespace ATM_simulator
 {
@@ -512,6 +515,10 @@ namespace ATM_simulator
                 lblWithdrawOutcome.Text = $"Withdrawal successful \nNew balance : £{activeAccount.getBalance()} ";
                 lblWithdrawOutcome.Visible = true;
                 lblProcessWithdraw.Visible = false;
+
+                // making reciept detaisl 
+                string receiptDetails = receiptLog(activeAccount, "Withdrawal", amount);
+                receiptSave(receiptDetails);
             }
             else
             {
@@ -522,6 +529,35 @@ namespace ATM_simulator
             btnReturntoMenu.Visible = true;
         }
 
+
+        // log to keep activity of transcations, in this case a withdrawal, with further additions a wire transfer
+        private string receiptLog(Account account, string transcationType, int amount)
+        {
+
+            StringBuilder receipt = new StringBuilder();
+
+            receipt.AppendLine("ATM Transaction Receipt");
+            receipt.AppendLine($"Account Number: {account.GetAccountNum()}");
+            receipt.AppendLine($"Date/Time: {DateTime.Now}");
+            receipt.AppendLine($"Transaction Type: {transcationType}");
+            receipt.AppendLine($"Amount: £{amount:C}");
+            receipt.AppendLine($"Remaning Balance:{account.getBalance():C}");
+            receipt.AppendLine("");
+
+            return receipt.ToString();
+        }
+
+
+       
+        private void receiptSave(string receiptDetails)
+        {
+            string filepath = "ATM_Receipts.txt";
+           
+            File.AppendAllText(filepath, receiptDetails + Environment.NewLine + "----------------------------" + Environment.NewLine);
+
+            
+
+        }
         private void btnEnter_Click(object sender, EventArgs e)
         {
 
