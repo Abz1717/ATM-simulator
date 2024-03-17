@@ -18,6 +18,14 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.IO;
 
 
+//metallic image credit "https://www.freepik.com/free-photo/metallic-background-with-grunge-scratched-effect_13839423.htm#query=rough%20metal%20texture&position=1&from_view=keyword&track=ais&uuid=857e71e6-eb1c-4174-ade6-69d2ddc255c0" Image by kjpargeter</a> on Freepik
+//red metallic image credit "https://www.freepik.com/free-photo/colourful-wall-seamless-background-texture_5458608.htm#fromView=search&page=1&position=1&uuid=f17c5890-96dc-4b52-b939-af6f26a8c281" Image by freepik
+//yellow metallic image credit "https://www.freepik.com/free-photo/yellow-painted-wall-background_13299816.htm#fromView=search&page=1&position=1&uuid=6979c5da-244c-4f8d-b1b2-91a27aaa0bb0"Image by rawpixel.com on Freepik
+//green mettalic image credit"https://www.freepik.com/free-photo/green-granite-wall-background_5281067.htm#fromView=search&page=1&position=35&uuid=6753b319-d0e1-4441-9472-eb35303b3740" Image by freepik<
+//metal1 image credit "https://www.freepik.com/free-photo/flat-lay-metal-surface_11684377.htm#query=rough%20metal%20texture&position=0&from_view=keyword&track=ais&uuid=c1e89dc6-9fb2-46dc-a5b6-f38ce05a3d9b"
+//metal2 image credit "https://www.freepik.com/free-photo/scratched-steel-textured-background-design_17114169.htm#query=rough%20metal%20texture&position=29&from_view=keyword&track=ais&uuid=6b4afb88-0391-4346-aa7f-e0aec521a212"
+
+
 namespace ATM_simulator
 {
     /**
@@ -179,21 +187,16 @@ namespace ATM_simulator
 
         private void InitializeLogin()
         {
+
             // create a colored block for the screen       
-            pnlScreenBlock = new Panel { BackColor = Color.DodgerBlue, Dock = DockStyle.Top, Height = 300 };
+            pnlScreenBlock = new Panel { BackColor = Color.DodgerBlue, Height = 300, Width = 525, Location = new Point((this.Width) / 16, (this.Height - Height) / 2), BorderStyle = BorderStyle.Fixed3D };
             Controls.Add(pnlScreenBlock);
             pnlScreenBlock.SendToBack();
 
-            // create panels for the buttons on left and right hand side
-            pnlLeftButtons = new Panel { BackColor = Color.Silver, Dock = DockStyle.Left, Width = 50 };
-            Controls.Add(pnlLeftButtons);
-
-            pnlRightButtons = new Panel { BackColor = Color.Silver, Dock = DockStyle.Right, Width = 50 };
-            Controls.Add(pnlRightButtons);
-
-            // panel for the keypad
-            pnlKeypad = new Panel { BackColor = Color.Silver, Dock = DockStyle.Bottom, Width = this.Width, Height = 360 };
+            // panel for the keypad height is 360 Dock = DockStyle.Bottom,
+            pnlKeypad = new Panel { BackColor = Color.Silver, Width = this.Width, Height = 700, BackgroundImage = Properties.Resources.metallic, BackgroundImageLayout = ImageLayout.Stretch };
             Controls.Add(pnlKeypad);
+
 
             // create keypad
             btn = new System.Windows.Forms.Button[3, 4];
@@ -203,7 +206,7 @@ namespace ATM_simulator
             {
                 for (int x = 0; x < btn.GetLength(0); x++)
                 {
-                    btn[x, y] = new System.Windows.Forms.Button { Location = new Point(90 + (80 * x), 310 + (80 * y)), Height = 75, Width = 75, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Flat, Font = new Font("Arial", 20, FontStyle.Regular) };
+                    btn[x, y] = new System.Windows.Forms.Button { Location = new Point(90 + (80 * x), 310 + (80 * y)), Height = 75, Width = 75, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), BackgroundImage = Properties.Resources.metalButt };
                     btn[x, y].Click += new EventHandler(this.btnEvent_Click);
                     if (y < 3)
                     {
@@ -232,7 +235,7 @@ namespace ATM_simulator
             num = 1;
             for (int x = 0; x < btnSelectLeft.GetLength(0); x++)
             {
-                btnSelectLeft[x] = new System.Windows.Forms.Button { Location = new Point(5, 120 + (60 * x)), Height = 40, Width = 40, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Popup };
+                btnSelectLeft[x] = new System.Windows.Forms.Button { Location = new Point(5, 120 + (60 * x)), Height = 40, Width = 40, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Popup, BackgroundImage = Properties.Resources.metal2, BackgroundImageLayout = ImageLayout.Stretch };
                 //btnSelectLeftLeft[x, y].Click += new EventHandler(this.btnEvent_Click);
                 Controls.Add(btnSelectLeft[x]);
                 btnSelectLeft[x].BringToFront();
@@ -244,13 +247,13 @@ namespace ATM_simulator
             num = 1;
             for (int x = 0; x < btnSelectRight.GetLength(0); x++)
             {
-                btnSelectRight[x] = new System.Windows.Forms.Button { Location = new Point(590, 120 + (60 * x)), Height = 40, Width = 40, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Popup };
+                btnSelectRight[x] = new System.Windows.Forms.Button { Location = new Point(590, 120 + (60 * x)), Height = 40, Width = 40, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Popup, BackgroundImage = Properties.Resources.metal2, BackgroundImageLayout = ImageLayout.Stretch };
                 Controls.Add(btnSelectRight[x]);
                 btnSelectRight[x].BringToFront();
                 num++;
             }
 
-            
+
             // lock picture
             lockPictureBox = new PictureBox { Size = new Size(width: 90, height: 90), BackColor = this.BackColor, SizeMode = PictureBoxSizeMode.Zoom, Location = new Point(255, 10), Visible = false, Image = Properties.Resources.padlock }; Controls.Add(lockPictureBox);
             lockPictureBox.BringToFront();
@@ -276,25 +279,25 @@ namespace ATM_simulator
             lblKeypad.BringToFront();
 
             // cancel button 
-            btnCancel = new System.Windows.Forms.Button { Text = "Cancel", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 310), Size = new Size(150, 75), BackColor = Color.Red };
+            btnCancel = new System.Windows.Forms.Button { Text = "Cancel", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 310), Size = new Size(150, 75), BackColor = Color.Red, BackgroundImage = Properties.Resources.metalRed, BackgroundImageLayout = ImageLayout.Stretch };
             btnCancel.Click += new EventHandler(this.btnCancel_Click);
             Controls.Add(this.btnCancel);
             btnCancel.BringToFront();
 
             // clear  button
-            btnClear = new System.Windows.Forms.Button { Text = "Clear", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 390), Size = new Size(150, 75), BackColor = Color.Yellow };
+            btnClear = new System.Windows.Forms.Button { Text = "Clear", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 390), Size = new Size(150, 75), BackColor = Color.Yellow, BackgroundImage = Properties.Resources.metalYellow, BackgroundImageLayout = ImageLayout.Stretch };
             btnClear.Click += new EventHandler(this.btnClear_Click);
             Controls.Add(this.btnClear);
             btnClear.BringToFront();
 
             // enter button
-            btnEnter = new System.Windows.Forms.Button { Text = "Enter", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 470), Size = new Size(150, 75), BackColor = Color.Lime };
+            btnEnter = new System.Windows.Forms.Button { Text = "Enter", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 470), Size = new Size(150, 75), BackColor = Color.Lime, BackgroundImage = Properties.Resources.metalGreen, BackgroundImageLayout = ImageLayout.Stretch };
             btnEnter.Click += new EventHandler(this.btnEnter_Click);
             Controls.Add(this.btnEnter);
             btnEnter.BringToFront();
 
             // blank button
-            btnBlank = new System.Windows.Forms.Button { Text = "", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 550), Size = new Size(150, 75), BackColor = Color.LightSlateGray };
+            btnBlank = new System.Windows.Forms.Button { Text = "", ForeColor = Color.Black, FlatStyle = FlatStyle.Popup, Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(350, 550), Size = new Size(150, 75), BackColor = Color.LightSlateGray, BackgroundImage = Properties.Resources.metal1, BackgroundImageLayout = ImageLayout.Stretch };
             Controls.Add(this.btnBlank);
             btnBlank.BringToFront();
 

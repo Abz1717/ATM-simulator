@@ -103,9 +103,29 @@ namespace ATM_simulator.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap metalButt {
+            get {
+                object obj = ResourceManager.GetObject("metalButt", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap metalGreen {
             get {
                 object obj = ResourceManager.GetObject("metalGreen", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap metallic {
+            get {
+                object obj = ResourceManager.GetObject("metallic", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
