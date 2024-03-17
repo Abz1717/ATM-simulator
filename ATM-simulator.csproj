@@ -93,5 +93,20 @@
   <ItemGroup>
     <None Include="Resources\padlock.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\metal2.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\metalGreen.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\metal1.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\metalYellow.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\metalRed.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
