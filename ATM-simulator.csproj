@@ -108,5 +108,11 @@
   <ItemGroup>
     <None Include="Resources\metalRed.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\metallic.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\metalButt.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

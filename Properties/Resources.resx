@@ -130,8 +130,14 @@
   <data name="metal2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\metal2.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="metalButt" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\metalButt.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="metalGreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\metalGreen.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="metallic" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\metallic.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="metalRed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\metalRed.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
