@@ -699,7 +699,7 @@ namespace ATM_simulator
                     updateUI(currentState);
                     return;
                 }
-                else if (activeAccount.getLocked() == true)
+                else if (activeAccount != null && activeAccount.getLocked() == true)
                 {
                     // the acccount has previously been locked and cannot be accessed 
                     lblMaxAttempts.Text = "This account has been locked and cannot be accessed 🔓:";
