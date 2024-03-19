@@ -617,6 +617,7 @@ namespace ATM_simulator
                 lblWithdrawOutcome.Text = "Insufficient funds";
                 lblWithdrawOutcome.Visible = true;
                 lblProcessWithdraw.Visible = false;
+                btnSelectRight[2].Click += btnReturntoMenu_Click;
             }
             btnReturntoMenu.Visible = true;
         }
