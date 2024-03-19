@@ -34,11 +34,9 @@ namespace ATM_simulator
     public partial class ATMForm : Form
     {
         // set up GUI variables
-        private System.Windows.Forms.Button btnWithdraw;
-        private System.Windows.Forms.Button btnCheckBalance;
-        private System.Windows.Forms.Button btnLogout;
+        private System.Windows.Forms.Button btnWithdraw, btnCheckBalance, btnLogout;
         private Label lblBalance;
-        private System.Windows.Forms.Button btnReturntoMenu;
+        private System.Windows.Forms.Button btnReturntoMenu, btnLockedLogin;
         private Label lblWithdrawInstructions;
         private ATMState currentState = ATMState.LoggedOut;
         private System.Windows.Forms.Button btnWithdraw10;
@@ -47,11 +45,11 @@ namespace ATM_simulator
         private System.Windows.Forms.Button btnWithdrawCustom;
         private System.Windows.Forms.Button btnEnter, btnCancel, btnClear, btnBlank;
         private System.Windows.Forms.Label lblKeypad, lblLoginText, lblOptionsText, lblWelcome, lblProcessWithdraw;
-        private System.Windows.Forms.Panel pnlScreenBlock, pnlLeftButtons, pnlRightButtons, pnlKeypad;
+        private System.Windows.Forms.Panel pnlScreenBlock, pnlKeypad;
         private Label lblAccEnter, lblPinEnter;
         Label lblEnterCustomWithdraw, lblWithdrawOutcome;
         private string pinText;
-        private Label lblAttempts;
+        private Label lblMaxAttempts;
         private int? enteredAcc = null;
         private PictureBox lockPictureBox;
         private System.Windows.Forms.Timer sessionTimer;
@@ -72,7 +70,7 @@ namespace ATM_simulator
 
         // setting starting attemps
         private int accountNumberAttempts = 0;
-        private int pinAttempts = 0;
+        //private int pinAttempts = 0;
 
         // setting maximum attempts
         private const int MaxAccountNumberAttempts = 5;
@@ -98,6 +96,10 @@ namespace ATM_simulator
 
         }
 
+        /**
+         * Find an account by its account number
+         * accountNumber - the account number to find
+         */
         public Account findAccount(int accountNumber)
         {
             foreach (Account acc in ac)
@@ -110,6 +112,9 @@ namespace ATM_simulator
             return null;
         }
 
+        /**
+         * Variable to store which state the ATM is currently
+         */
         enum ATMState
         {
             LoggedIn,
@@ -122,7 +127,9 @@ namespace ATM_simulator
 
         }
 
-
+        /**
+         * Initialise all of the controls for using the system once the user has logged in
+         */
         private void InitializeControls()
         {
             lblOptionsText = new Label { Text = "Please select an option listed:", ForeColor = Color.White, BackColor = Color.DodgerBlue, AutoEllipsis = false, AutoSize = true, BorderStyle = BorderStyle.None, Font = new Font("Arial", 20, FontStyle.Regular), MaximumSize = new Size(400, 60), Location = new Point(120, 60), Visible = false };
@@ -135,17 +142,17 @@ namespace ATM_simulator
             lblBalance = new Label { Location = new Point(120, 100), Size = new Size(400, 60), Visible = false, Font = new Font("Arial", 20, FontStyle.Regular), ForeColor = Color.White, BackColor = Color.DodgerBlue };
             lblWithdrawInstructions = new Label { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.DodgerBlue, Text = "Choose your withdrawal amount below: ", BorderStyle = BorderStyle.None, Location = new Point(70, 40), Size = new Size(400, 60), Visible = false, Font = new Font("Arial", 18, FontStyle.Regular) };
 
-            btnWithdraw10 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£10", Location = new Point(80,110), Size = new Size(220, 50), Visible = false };
+            btnWithdraw10 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£10", Location = new Point(80, 110), Size = new Size(220, 50), Visible = false };
             btnWithdraw50 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£50", Location = new Point(80, 170), Size = new Size(220, 50), Visible = false };
             btnWithdraw500 = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 24, FontStyle.Regular), Text = "£500", Location = new Point(80, 230), Size = new Size(220, 50), Visible = false };
             btnWithdrawCustom = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 18, FontStyle.Regular), Text = "Custom Amount", Location = new Point(320, 110), Size = new Size(220, 50), Visible = false };
             btnReturntoMenu = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 12, FontStyle.Regular), Text = "Return to Account Menu", Size = new Size(220, 50), Location = new Point(320, 230), Visible = false };
 
-            lblProcessWithdraw = new Label {Text = "Please wait, contacting your bank... ↻", ForeColor = Color.White, BackColor = Color.DodgerBlue, AutoEllipsis = false, AutoSize = true, BorderStyle = BorderStyle.None, Font = new Font("Arial", 26, FontStyle.Regular), MaximumSize = new Size(500, 200), Location = new Point(100, 100), Visible = false };
+            lblProcessWithdraw = new Label { Text = "Please wait, contacting your bank... ↻", ForeColor = Color.White, BackColor = Color.DodgerBlue, AutoEllipsis = false, AutoSize = true, BorderStyle = BorderStyle.None, Font = new Font("Arial", 26, FontStyle.Regular), MaximumSize = new Size(500, 200), Location = new Point(100, 100), Visible = false };
             lblEnterCustomWithdraw = new Label { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.DodgerBlue, Text = "Use the keypad to enter a custom withdrawal amount: ", BorderStyle = BorderStyle.None, Location = new Point(80, 100), Size = new Size(500, 200), Visible = false, Font = new Font("Arial", 24, FontStyle.Regular) };
             lblWithdrawOutcome = new Label { ForeColor = Color.White, BackColor = Color.DodgerBlue, AutoEllipsis = false, AutoSize = true, BorderStyle = BorderStyle.None, Font = new Font("Arial", 26, FontStyle.Regular), MaximumSize = new Size(500, 200), Location = new Point(100, 100), Visible = false };
-            lblAttempts = new Label { ForeColor = Color.White, BackColor = Color.DodgerBlue, AutoEllipsis = false, AutoSize = true, BorderStyle = BorderStyle.None, Font = new Font("Arial", 26, FontStyle.Regular), MaximumSize = new Size(500, 200), Location = new Point(100, 100), Visible = false };
-            
+     
+
 
             // add functionality to buttons
             btnWithdraw.Click += new EventHandler(this.btnWithdraw_Click);
@@ -155,7 +162,7 @@ namespace ATM_simulator
 
             btnWithdraw10.Click += new EventHandler(this.btnWithdraw10_Click);
             btnWithdraw50.Click += new EventHandler(this.btnWithdraw50_Click);
-            
+
             btnWithdraw500.Click += new EventHandler(this.btnWithdraw500_Click);
             btnWithdrawCustom.Click += new EventHandler(this.btnWithdrawCustom_Click);
 
@@ -174,17 +181,19 @@ namespace ATM_simulator
             Controls.Add(lblWithdrawOutcome);
 
 
-            lblTimeout = new Label { Text = "Your session has timed out. ⏱︎ ", ForeColor = Color.White, BackColor = Color.DodgerBlue, Font = new Font("Arial", 20, FontStyle.Regular), BorderStyle = BorderStyle.None, AutoSize = true, AutoEllipsis = false, MaximumSize = new Size(400, 900), Location = new Point(120, 60), Visible = false};
+            lblTimeout = new Label { Text = "Your session has timed out. ⏱︎ ", ForeColor = Color.White, BackColor = Color.DodgerBlue, Font = new Font("Arial", 20, FontStyle.Regular), BorderStyle = BorderStyle.None, AutoSize = true, AutoEllipsis = false, MaximumSize = new Size(400, 900), Location = new Point(120, 60), Visible = false };
             Controls.Add(lblTimeout);
             lblTimeout.BringToFront();
 
-            btnTimeoutLogIn = new System.Windows.Forms.Button { Text = "Log Back In?", ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 12, FontStyle.Regular), Size = new Size(220, 50), Location = new Point(320, 230), Visible = false};
+            btnTimeoutLogIn = new System.Windows.Forms.Button { Text = "Log Back In?", ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 12, FontStyle.Regular), Size = new Size(220, 50), Location = new Point(320, 230), Visible = false };
             btnTimeoutLogIn.Click += new EventHandler(this.BtnTimeoutLogin_Click);
             Controls.Add(btnTimeoutLogIn);
 
         }
 
-
+        /**
+         * Initialise all of the controls to allow the user to log into their account
+         */
         private void InitializeLogin()
         {
 
@@ -236,7 +245,6 @@ namespace ATM_simulator
             for (int x = 0; x < btnSelectLeft.GetLength(0); x++)
             {
                 btnSelectLeft[x] = new System.Windows.Forms.Button { Location = new Point(5, 120 + (60 * x)), Height = 40, Width = 40, BackColor = Color.LightSlateGray, FlatStyle = FlatStyle.Popup, BackgroundImage = Properties.Resources.metal2, BackgroundImageLayout = ImageLayout.Stretch };
-                //btnSelectLeftLeft[x, y].Click += new EventHandler(this.btnEvent_Click);
                 Controls.Add(btnSelectLeft[x]);
                 btnSelectLeft[x].BringToFront();
                 num++;
@@ -305,16 +313,32 @@ namespace ATM_simulator
             lblPinEnter = new Label { Text = "Please enter your 4-digit pin 🔓:", Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(120, 120), Size = new Size(400, 80), BackColor = Color.DodgerBlue, ForeColor = Color.White, Visible = false };
             Controls.Add(lblPinEnter);
             lblPinEnter.BringToFront();
+
+            btnLockedLogin = new System.Windows.Forms.Button { ForeColor = Color.White, FlatStyle = FlatStyle.Popup, BackColor = Color.MediumBlue, Font = new Font("Arial", 12, FontStyle.Regular), Text = "Login to a different account", Size = new Size(220, 50), Location = new Point(320, 230), Visible = false };
+            btnLockedLogin.Click += new EventHandler(this.btnLockedLogin_Click);
+            Controls.Add(btnLockedLogin);
+            btnLockedLogin.BringToFront();
+
+
+            lblMaxAttempts = new Label { Text = "Please enter your 4-digit pin 🔓:", Font = new Font("Arial", 20, FontStyle.Regular), Location = new Point(120, 120), Size = new Size(400, 80), BackColor = Color.DodgerBlue, ForeColor = Color.White, Visible = false };
+            Controls.Add(lblMaxAttempts);
+            lblMaxAttempts.BringToFront();
+
         }
 
 
-        // Timer to timeout atm session when user is inactive
+        /**
+         * Timer to timeout atm session and log user out when user is inactive
+         */
         private void InitializeTimer()
         {
             sessionTimer = new System.Windows.Forms.Timer { Interval = 60000 };
             sessionTimer.Tick += SessionTimer_Tick;
         }
 
+        /**
+         * Stop the timer and log the user out of their session if they have been inactive 
+         */
         private void SessionTimer_Tick(object sender, EventArgs e)
         {
             sessionTimer.Stop();
@@ -326,6 +350,9 @@ namespace ATM_simulator
 
         }
 
+        /**
+         * Button to log back in again after the user has been timed out
+         */
         private void BtnTimeoutLogin_Click(object sender, EventArgs e)
         {
             lblTimeout.Visible = false;
@@ -333,12 +360,28 @@ namespace ATM_simulator
 
             currentState = ATMState.LoggedOut;
             updateUI(currentState);
+        }
 
-            //clearing out previous pin attempts if the user wants to log back in.
-            pinAttempts = 0;
-    }
+        /**
+         * Button to log back in again to a different account after being locked out of an account
+         */
+        private void  btnLockedLogin_Click(object sender, EventArgs e)
+        {
+            // enable all buttons
+            foreach (var button in this.Controls.OfType<System.Windows.Forms.Button>())
+            {
+                button.Enabled = true;
+            }
+            btnLockedLogin.Visible = false;
 
-    private void ResetSessionTimer()
+            currentState = ATMState.LoggedOut;
+            updateUI(currentState);
+        }
+
+        /**
+         * Reset the session timer once the user becomes active again
+         */
+        private void ResetSessionTimer()
         {
             if (currentState == ATMState.LoggedIn)
             {
@@ -349,11 +392,10 @@ namespace ATM_simulator
 
         /**
          * Event handler for keypad buttons
-         * Make text appear on label
+         * Make text appear oninput label
          */
         void btnEvent_Click(object sender, EventArgs e)
         {
-            
             // display *s if the user is entering their password
             if (currentState == ATMState.EnteredAccount)
             {
@@ -382,15 +424,31 @@ namespace ATM_simulator
             ResetSessionTimer();
         }
 
+        /**
+         * Event handler for cancel button
+         * Return to start of login page if not logged in and return to logged in page if already logged in
+         */
         void btnCancel_Click(object sender, EventArgs e)
         {
-            currentState = ATMState.LoggedOut;
-            updateUI(currentState);
-
+            if (currentState == ATMState.EnteredAccount || currentState == ATMState.LoggedOut)
+            {
+                currentState = ATMState.LoggedOut;
+                updateUI(currentState);
+            }
+            else
+            {
+                currentState = ATMState.LoggedIn;
+                updateUI(currentState);
+            }
+            
             ResetSessionTimer();
 
         }
 
+        /**
+         * Event handler for button to withdraw a custom amount
+         * Ask the user to input their custome amount
+         */
         private void btnWithdrawCustom_Click(object sender, EventArgs e)
         {
             resetUI();
@@ -400,6 +458,9 @@ namespace ATM_simulator
             ResetSessionTimer();
         }
 
+        /**
+         * Event handler for button to withdraw £50
+         */
         private void btnWithdraw50_Click(object sender, EventArgs e)
         {
             doWithdrawal(50);
@@ -407,12 +468,19 @@ namespace ATM_simulator
             ResetSessionTimer();
         }
 
+        /**
+         * Event handler for button to withdraw £500
+         */
         private void btnWithdraw500_Click(object sender, EventArgs e)
         {
             doWithdrawal(500);
 
             ResetSessionTimer();
         }
+
+        /**
+         * Event handler for button to withdraw £10
+         */
 
         private void btnWithdraw10_Click(object sender, EventArgs e)
         {
@@ -421,6 +489,9 @@ namespace ATM_simulator
             ResetSessionTimer();
         }
 
+        /**
+         * Event handler for button to return to the main logged in menu
+         */
         private void btnReturntoMenu_Click(object sender, EventArgs e)
         {
             currentState = ATMState.LoggedIn;
@@ -429,7 +500,9 @@ namespace ATM_simulator
             ResetSessionTimer();
         }
 
-
+        /**
+         * Reset the user interface by removing everything from it
+         */
         private void resetUI()
         {
             //Code generated objects 
@@ -449,13 +522,15 @@ namespace ATM_simulator
             lblLoginText.Visible = false;
             lblOptionsText.Visible = false;
             lblWelcome.Visible = false;
-            lblProcessWithdraw.Visible=false;
+            lblProcessWithdraw.Visible = false;
             lblEnterCustomWithdraw.Visible = false;
             lblWithdrawOutcome.Visible = false;
             lblKeypad.Text = "";
             lockPictureBox.Visible = false;
             lblTimeout.Visible = false;
-            btnTimeoutLogIn.Visible = false;    
+            btnTimeoutLogIn.Visible = false;
+            btnLockedLogin.Visible = false;
+            lblMaxAttempts.Visible = false;
 
 
             // remove event handlers form side buttons
@@ -467,23 +542,29 @@ namespace ATM_simulator
             btnSelectLeft[0].Click -= btnWithdraw10_Click;
             btnSelectLeft[1].Click -= btnWithdraw50_Click;
             btnSelectLeft[2].Click -= btnWithdraw500_Click;
+            btnSelectRight[2].Click -= BtnTimeoutLogin_Click;
+            btnSelectRight[2].Click -= btnLockedLogin_Click;
         }
 
 
 
-        // im not sure what he meant about
-        // "change the operation so that rather than exiting when a person takes
-        // their card(option 3), the system goes back to the beginning
+        /**
+         * Event handler to log a user out of their account and return to the initial login screen
+         */
         private void btnLogout_Click(object sender, EventArgs e)
         {
 
             currentState = ATMState.LoggedOut;
             updateUI(currentState);
 
-             
+
             sessionTimer.Stop();
         }
-
+        
+        /**
+         * Event handler for check balance button
+         * Allow the user to check and view their account balance
+         */
         private void btnCheckBalance_Click(object sender, EventArgs e)
         {
             currentState = ATMState.DisplayingBalance;
@@ -496,14 +577,21 @@ namespace ATM_simulator
             ResetSessionTimer();
         }
 
+        /**
+         * Gives the user the option to choose an amount of money to withdraw from their account
+         */
+
         private void btnWithdraw_Click(object sender, EventArgs e)
         {
-            currentState = ATMState.WithdrawingMoney;
+            currentState = ATMState.WithdrawingMoney; // update UI to give option to withdraw money
             updateUI(currentState);
 
             ResetSessionTimer();
         }
 
+        /**
+         * Method to do the withdrawal from the active account, keeping a receipt of the trasaction and checking there are sufficient funds
+         */
         private void doWithdrawal(int amount)
         {
             currentState = ATMState.ProcessingWithdrawal;
@@ -512,12 +600,13 @@ namespace ATM_simulator
             Application.DoEvents(); // redraw GUI before doing withdrawal
 
             Thread.Sleep(2000);
-            
+
             if (activeAccount != null && activeAccount.decrementBalance(amount, dataRace))
             {
                 lblWithdrawOutcome.Text = $"Withdrawal successful \nNew balance : £{activeAccount.getBalance()} ";
                 lblWithdrawOutcome.Visible = true;
                 lblProcessWithdraw.Visible = false;
+                btnSelectRight[2].Click += btnReturntoMenu_Click;
 
                 // making reciept detaisl 
                 string receiptDetails = receiptLog(activeAccount, "Withdrawal", amount);
@@ -533,7 +622,9 @@ namespace ATM_simulator
         }
 
 
-        // log to keep activity of transcations, in this case a withdrawal, with further additions a wire transfer
+        /**
+         * Log to keep activity of transcations, in this case a withdrawal
+         */
         private string receiptLog(Account account, string transcationType, int amount)
         {
 
@@ -551,20 +642,28 @@ namespace ATM_simulator
         }
 
 
-       
+        /**
+         * MEthod to save the transaction receipt to a text file
+         */
         private void receiptSave(string receiptDetails)
         {
             string filepath = "ATM_Receipts.txt";
-           
+
             File.AppendAllText(filepath, receiptDetails + Environment.NewLine + "----------------------------" + Environment.NewLine);
 
-            
+
 
         }
+
+        /** 
+         * Event handler for enter button
+         * Checks what state the ATM is in to know what the user is using the enter button for
+         * Handles account number entry, pin number entry, and custom withdrawal ammount
+         */
         private void btnEnter_Click(object sender, EventArgs e)
         {
 
-            // first check if entering acount number, pin, or custom amount
+            // first check what enter is being used for - if entering acount number, pin, or custom amount
             if (currentState == ATMState.LoggedOut) // user is entering account number
             {
                 /*
@@ -589,18 +688,42 @@ namespace ATM_simulator
                     lblKeypad.Text = "";
                     return;
                 }
-           
+
                 activeAccount = findAccount(int.Parse(lblKeypad.Text));
-                if (activeAccount != null)
+                if (activeAccount != null && activeAccount.getLocked() == false)
                 {
+                    // if we reach here, it is a valid account and is not locked, so display request for pin
                     enteredAcc = int.Parse(lblKeypad.Text);
-                    // if we reach here, it is a valid account, so display request for pin
+                    lblKeypad.Text = "";
                     currentState = ATMState.EnteredAccount;
                     updateUI(currentState);
                     return;
                 }
+                else if (activeAccount != null && activeAccount.getLocked() == true)
+                {
+                    // the acccount has previously been locked and cannot be accessed 
+                    lblMaxAttempts.Text = "This account has been locked and cannot be accessed 🔓:";
+                    lblMaxAttempts.Visible = true;
+                    lblAccEnter.Visible = false;
+                    lblKeypad.Text = "";
+                    // disable all buttons
+                    foreach (var button in this.Controls.OfType<System.Windows.Forms.Button>())
+                    {
+                        button.Enabled = false;
+                    }
+                    btnLockedLogin.Enabled = true;
+                    btnLockedLogin.Visible = true;
+                    btnSelectRight[2].Click += btnLockedLogin_Click;
+                    btnSelectRight[2].Enabled = true;
+                    lblPinEnter.Visible = false;
+                    lblKeypad.Visible = false;  
+                    lblLoginText.Visible = false;
+                    lockPictureBox.Visible = true;
+                    lockPictureBox.Invalidate();
+                }
                 else
                 {
+                    // account number entered is invalid
                     Shake(lblKeypad, 500, 5);
                     lblAccEnter.Text = "Please enter a valid 6-digit account number 🔑:";
                     lblKeypad.Text = "";
@@ -620,10 +743,17 @@ namespace ATM_simulator
             }
             else // user is entering pin
             {
-
-                if (++pinAttempts >= MaxPinAttempts)
+                // update the number of pin attempts for the current active account
+                int attempts = activeAccount.getPinAttempts();
+                attempts++;
+                activeAccount.setPinAttempts(attempts);
+                // check if they have reached the maximum pin attempts
+                if (activeAccount.getPinAttempts() >= MaxPinAttempts)
                 {
+                    lblKeypad.Text = "";
+                    pinText = "";
                     MaximumPinAttempts();
+                    activeAccount.setLocked(true);
                     return;
                 }
 
@@ -647,6 +777,7 @@ namespace ATM_simulator
                 {
                     sessionTimer.Start();
 
+                    activeAccount.setPinAttempts(0); // reset pin attempts once user successfully logs in
                     lblKeypad.Text = "";
                     pinText = "";
                     currentState = ATMState.LoggedIn;
@@ -664,7 +795,7 @@ namespace ATM_simulator
             ResetSessionTimer();
         }
 
-        // might not be needed
+        // might not be needed - don't think it is
         /*
         private void MaximumAccNumAttempts()
         {
@@ -680,16 +811,26 @@ namespace ATM_simulator
            
         }
         */
+
+        /**
+         * Display account locked page if the use has entered maximum pin attempts
+         */
         private void MaximumPinAttempts()
         {
+            // disable all buttons
             foreach (var button in this.Controls.OfType<System.Windows.Forms.Button>())
             {
-                button.Enabled = false; 
+                button.Enabled = false;
             }
-            lblPinEnter.Visible = true;
-            lblPinEnter.Text = $"Account number {enteredAcc} has now been locked 🔒";
-            lblKeypad.Visible = true;
-            lblKeypad.Text = "**************";
+            btnLockedLogin.Enabled = true;
+            lblPinEnter.Visible = false;
+            lblMaxAttempts.Visible = true;
+            lblMaxAttempts.Text = $"Account number {enteredAcc} has now been locked 🔒";
+            lblKeypad.Visible = false;
+            btnLockedLogin.Visible = true;
+            btnSelectRight[2].Click += btnLockedLogin_Click;
+            btnSelectRight[2].Enabled = true;
+
 
             lblLoginText.Visible = false;
             lockPictureBox.Visible = true;
@@ -697,41 +838,45 @@ namespace ATM_simulator
 
         }
 
+        /**
+         * Method to shake a given control for a certain period of time
+         * control - control to shake
+         * time - time to shake the control for
+         * amount - amount to shake the control
+         */
         private void Shake(Control control, int time, int amount)
         {
             var normalLocation = control.Location;
             Random rnd = new Random();
 
-           
+
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            while(stopWatch.ElapsedMilliseconds < time)
+            while (stopWatch.ElapsedMilliseconds < time)
             {
                 // random offsets to cause a shake effect
-                int x = normalLocation.X +rnd.Next(-amount, amount);
+                int x = normalLocation.X + rnd.Next(-amount, amount);
                 int y = normalLocation.Y + rnd.Next(-amount, amount);
                 control.Location = new Point(x, y);
                 Thread.Sleep(10);
             }
             stopWatch.Stop();
-            
+
             control.Location = normalLocation;
 
         }
 
 
-    
-
-
-
-        // to make UI easier to control 
+        /**
+         * Update the UI based on the state it is currently in to make it easier to control
+         */
         private void updateUI(ATMState state)
         {
-
+            // remove everything from the UI first
             resetUI();
 
-
+            // then add back the items that will be needed for the relevant state
             switch (state)
             {
                 case ATMState.LoggedIn:
@@ -786,29 +931,35 @@ namespace ATM_simulator
                 case ATMState.TimedOut:
                     lblTimeout.Visible = true;
                     btnTimeoutLogIn.Visible = true;
+                    btnSelectRight[2].Click += BtnTimeoutLogin_Click;
                     break;
 
             }
         }
     }
 
-
+    /**
+     * Bank Computer Class
+     * Contains references to all of the bank account stored in the bank and creates all of the ATMs which are used
+     * Used to launch and intialise the ATMs
+     */
     public partial class BankComputer : Form
     {
         private Account[] ac = new Account[3]; // create array of accounts
         private System.Windows.Forms.Button btnLaunchATMRace;
         private System.Windows.Forms.Button btnLaunchATMNonRace;
-        bool dataRace = false; // to know if there is a data race or not to use for setup
-        Thread atmThread1, atmThread2, atmThread3, atmThread4; // create threads
+        private bool dataRace = false; // to know if there is a data race or not to use for setup
+        private Thread atmThread1, atmThread2, atmThread3, atmThread4; // create threads
+        private bool launched = false;
+        private ATMForm atmForm1, atmForm2;
 
         private System.Windows.Forms.Label welcomeText;
         private System.Windows.Forms.Panel colorBlock;
         private System.Windows.Forms.PictureBox logo;
         private System.Windows.Forms.Panel diagonalStripePanel;
 
-        /*
-         * This fucntions initilises the 3 accounts 
-         * and instanciates the ATM class passing a referance to the account information
+        /**
+         * This fucntions initilises the 3 accounts and sets up so that the user can use an ATM
          * 
          */
         public BankComputer()
@@ -819,6 +970,10 @@ namespace ATM_simulator
 
         }
 
+
+        /**
+         * Display the inital screen to the user to allow them to launch ATMS
+         */
         private void InitializeComponent()
         {
             // adding controls here for data race and non data race versions so you can start the system with either
@@ -871,21 +1026,27 @@ namespace ATM_simulator
             Controls.Add(this.btnLaunchATMNonRace);
         }
 
-        // possibly could have atm creation in some sort of loop but they are done separately for now
+        /**
+         * Initialise threads for the two ATMs to run on and set up for a data race version
+         */
         private void BtnLaunchATMRace_Click(object sender, EventArgs e)
         {
-            // run two separate ATMs on two different threads - we need to have them running on separate threads from the stater
-            // do we want the launch form to close when the ATMs are launched, to mean that you can't be running multiple versions of the program at once?
+            // run two separate ATMs on two different threads 
             dataRace = true;
             atmThread1 = new Thread(new ThreadStart(this.RunATM1));
-            //atmThread1.IsBackground = true; if we want the thread all threads to close after main thread closure.
             atmThread1.Start();
 
             atmThread2 = new Thread(new ThreadStart(this.RunATM2));
             atmThread2.Start();
+
+            // close the starting form once ATMs have been launched
+            this.Close();
+
         }
 
-        // Launch ATMs wihtout a data race
+        /**
+         * Initialise threads for the two ATMs to run on and set up for a non-data race version
+         */
         private void BtnLaunchATMNonRace_Click(object sender, EventArgs e)
         {
             dataRace = false;
@@ -896,16 +1057,22 @@ namespace ATM_simulator
 
             atmThread2 = new Thread(new ThreadStart(this.RunATM2));
             atmThread2.Start();
+
+            // close the starting form once ATMs have been launched
+            this.Close();
         }
 
-        // create first ATM form and run
+        /**
+         * Create and run first ATM form
+         */
         private void RunATM1()
         {
-            ATMForm atmForm1 = new ATMForm(ac, dataRace);
+            atmForm1 = new ATMForm(ac, dataRace);
             atmForm1.Icon = Properties.Resources.atmIcon;
             atmForm1.Size = new Size(650, 700);
             atmForm1.StartPosition = FormStartPosition.Manual;
             atmForm1.Location = new Point(0, 0);
+            //atmForm1.
             if (dataRace == true)
             {
                 atmForm1.Text = "ATM 1 (data race)";
@@ -917,10 +1084,12 @@ namespace ATM_simulator
             Application.Run(atmForm1);
         }
 
-        // create second ATM form and run
+        /**
+         * Create and run second ATM form
+         */
         private void RunATM2()
         {
-            ATMForm atmForm2 = new ATMForm(ac, dataRace);
+            atmForm2 = new ATMForm(ac, dataRace);
             atmForm2.Icon = Properties.Resources.atmIcon;
             atmForm2.Size = new Size(650, 700);
             atmForm2.StartPosition = FormStartPosition.Manual;
@@ -936,6 +1105,9 @@ namespace ATM_simulator
             Application.Run(atmForm2);
         }
 
+        /**
+         * Set up the bank accounts with their details ready for use
+         */
         private void InitializeAccounts()
         {
             // set up accounts
@@ -955,38 +1127,89 @@ namespace ATM_simulator
 
     }
 
-
+    /**
+     * The Account class contains all of the information necessary for a bank account
+     */
     public class Account
     {
         //the attributes for the account
         private int balance;
         private int pin;
+        private int pinAttempts;
         private int accountNum;
         private static Semaphore balanceSemaphore;
+        private bool locked;
 
-        // a constructor that takes initial values for each of the attributes (balance, pin, accountNumber)
+        /**
+         * a constructor that takes initial values for each of the attributes (balance, pin, accountNumber)
+         * sets locked and number of pin attempts to default values initially
+         */
         public Account(int balance, int pin, int accountNum)
         {
             this.balance = balance;
             this.pin = pin;
             this.accountNum = accountNum;
+            this.locked = false;
+            this.pinAttempts = 0;
             // set up semaphore to only allow one concurrent entry
             balanceSemaphore = new Semaphore(1, 2);
         }
 
-        //getter and setter functions for balance
+        /**
+         * Get the balance of an account
+         */
         public int getBalance()
         {
             return balance;
         }
+
+        /**
+         * Set the balance of an account
+         * newBalance - value to set the balance to
+         */
         public void setBalance(int newBalance)
         {
             this.balance = newBalance;
         }
 
         /**
+         * Get the value of whether an account is locked or not
+         */
+        public bool getLocked()
+        {
+            return locked;
+        }
+
+        /**
+         * Set the value of whether an account is locked or not
+         * newLocked - boolean value of whether the account is locked 
+         */
+        public void setLocked(bool newLocked)
+        {
+            this.locked = newLocked;
+        }
+
+        /**
+         * Get the number of wrong pin attempts registered with the account
+         */
+        public int getPinAttempts()
+        {
+            return pinAttempts;
+        }
+
+        /**
+         * Set the number of wrong pin attempts registered with the account to a given value 
+         * pinAttempt - value to set the number of pin attempts to
+         */
+        public void setPinAttempts(int pinAttempt)
+        {
+            this.pinAttempts = pinAttempt;
+        }
+
+        /**
          * Decrement the balance of the account, first checking if there are sufficient funds to do so
          * amount - the amount to decrement the balance by
+         * dataRace - boolean to know whether the ATM is in the data race or non data race version
          * return true if transaction was successful, false if there were unsufficient funds
          */
         public Boolean decrementBalance(int amount, bool dataRace)
@@ -997,7 +1220,7 @@ namespace ATM_simulator
                 {
                     // decrement the balance, then wait before updating it to the account
                     int newBalance = balance - amount;
-                    Thread.Sleep(3000); // artificial delay to increase chances of data race condition demonstration
+                    Thread.Sleep(3000); // artificial delay for data race condition demonstration
                                         // using thread.sleep blocks current thread for a specific time
                                         // then update the amount to the main bank account balance
                     balance = newBalance;
@@ -1030,6 +1253,7 @@ namespace ATM_simulator
 
         /**
          * Check the entered pin against the pin stored in the account
+         * pinEntered - the entered pin to check against the stored pin
          */
         public Boolean checkPin(int pinEntered)
         {
@@ -1043,7 +1267,9 @@ namespace ATM_simulator
             }
         }
 
-        // get the account number
+        /**
+         * Get the account number
+         */
         public int GetAccountNum()
         {
             return accountNum;
